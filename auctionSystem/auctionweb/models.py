@@ -4,6 +4,27 @@ from django.db import models
 '''
 auctionSystem 总model文件
 '''
+class Variety(models.Model):
+    """
+    货物品种
+    """
+    # 品种名称
+    name = models.CharField(max_length=50)
+       
+    def __unicode__(self):
+        return self.name
+    
+class AuctionField(models.Model):
+    """
+    拍卖场
+    """
+    # 拍卖场名字
+    name = models.CharField(max_length=50)
+    # 品种
+    varieties = models.ForeignKey(Variety, unique=True)
+
+    def __unicode__(self):
+        return self.name
 
 class Customer(models.Model):
     """客户类"""
@@ -15,6 +36,7 @@ class Customer(models.Model):
     phone = models.CharField(max_length=20) 
     # 客户地址
     address = models.TextField() 
+
     def __str__(self):
         return self.name
 
@@ -65,6 +87,9 @@ class Commodity(models.Model):
     peel_field = models.ForeignKey(PeelField) 
     # 削皮指示
     peel_inform = models.CharField(max_length=100) 
+    # 品种
+    variety = OneToOneField(Variety)
+
     def __str__(self):
         return self.lot
 
