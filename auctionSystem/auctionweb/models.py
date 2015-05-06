@@ -22,6 +22,8 @@ class AuctionField(models.Model):
     name = models.CharField(max_length=50)
     # 品种
     varieties = models.ForeignKey(Variety, unique=True)
+    # 货币种类
+    currency = models.CharField(max_length=50)
 
     def __unicode__(self):
         return self.name
