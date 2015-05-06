@@ -90,7 +90,7 @@ class Commodity(models.Model):
     # 削皮指示
     peel_inform = models.CharField(max_length=100) 
     # 品种
-    variety = OneToOneField(Variety)
+    variety = models.OneToOneField(Variety)
 
     def __str__(self):
         return self.lot

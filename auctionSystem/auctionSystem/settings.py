@@ -64,7 +64,9 @@ WSGI_APPLICATION = 'auctionSystem.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': "auction"
+        'NAME': "auction",
+        "user": "root",
+        "password": "qzn928",
     }
 }
 
