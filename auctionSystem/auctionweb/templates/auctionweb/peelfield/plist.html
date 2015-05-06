@@ -1,0 +1,142 @@
+
+{% extends "auctionweb/layout.html" %}
+
+{% block header_js %}
+    <style>
+        .ceTable{text-align:center}
+    </style>
+{% endblock%}
+{% block content %}
+<table class="display" id="lotTable" cellspacing="0" width="100%">
+    <thead>
+        <tr>
+            <th><span>品种</span></th>
+            <th><span>性别</span></th>
+            <th><span>LOT号</span></th>
+            <th><span>客户编号</span></th>
+            <th><span>尺码</span></th>
+            <th><span>等级</span></th>
+            <th><span>颜色</span></th>
+            <th><span>清晰度</span></th>
+            <th><span>数量</span></th>
+            <th><span>敲锤价</span></th>
+            <th><span>评估</span></th>
+            <th><span>削皮场</span></th>
+            <th><span>削皮指示</span></th>
+            <th><span>备注</span></th>
+         <!--   <th><span>操作</span></th>-->
+        </tr>
+    </thead>
+</table>
+{% endblock %}
+<!-- Modal -->
+{% block footer_block %}
+<style>
+.modal-backdrop{z-index:0;}
+</style>
+<div class="modal fade" id="paddModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="myModalLabel">添加削皮场</h4>
+      </div>
+        <form class="form-horizontal" role="form" action="{% url 'padd' %}" id="paddForm"> 
+          <div class="modal-body">
+                <div class="form-body" style="padding-bottom:0px" id="paddFormContent">
+                </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            <button type="submit" class="btn btn-primary" id="invoiceSumit">Save and create invoice</button>
+          </div>
+        </form>
+    </div>
+  </div>
+</div>
+<div class="modal fade" id="commentModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="myModalLabel">备注信息</h4>
+      </div>
+      <div class="modal-body">
+        <span class="comment"></span>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block footer_js %}
+    <script type="text/javascript">
+        var lotTable = $("#lotTable").DataTable({
+            "searching": true,
+            //"info": false,
+           // "paging": false,
+            "sDom": '<"toolsbar"><"H"TfrC>t<"F"ip>',
+            "oTableTools":{
+                "sRowSelect": "single",
+                "aButtons":[
+                    {
+                        "sExtends": "text",
+                        "sButtonText": "添加削皮场",
+                      "fnClick": function(nButton, oConfig, oFlash){
+                            var ott = TableTools.fnGetInstance("lotTable");
+                            var selectAtrs = ott.fnGetSelectedData();
+                            if(selectAtrs.length!=1){
+                                alert("选择一行进行操作")
+                                return false
+                            }
+                            $.getJSON("{% url 'padd' %}", function(data){
+                                $("#paddFormContent").empty().html(data.data.html)
+                            })
+                            $("#paddModal").modal();
+                            console.log("11111111")
+                            $("#paddForm").ajaxForm({
+                                type: "post",
+                                data: {"lot_nu": selectAtrs[0].lot, "csrfmiddlewaretoken": $("{%csrf_token%}").val()},
+                                success: function(data){
+                                    if (data.success){
+                                        alert("添加成功")
+                                    }else{
+                                        alert(data.error_messages)
+                                    }
+                                }
+                            })
+                        }
+                    }
+                ]
+            },
+            "ajaxSource":"{% url 'pdata' %}",
+            "columns":[
+                {"data": "types"},
+                {"data": "sex"},
+                {"data": "lot"},
+                {"data": "customer_id"},
+                {"data": "size"},
+                {"data": "level"},
+                {"data": "color"},
+                {"data": "definition"},
+                {"data": "number"},
+                {"data": "final_price"},
+                {"data": "evaluation"},
+                {"data": "peel_field"},
+                {"data": "peel_inform"},
+                {"data": "remarks", "fnCreatedCell": function(nTd, sData, oData, iRow, iCol){
+                    element = $(nTd).empty();
+                    lookBtn = $("<input type='button' class='btn btn-sm btn-success' value='查看'/>").on("click", function(){
+                        var comment = oData["remarks"];
+                        $("#commentModal .comment").text(comment)
+                        $("#commentModal").modal();
+                    })
+                    element.append(lookBtn)
+                }},
+            ]
+        })
+    </script>
+{% endblock %}
+{% block navname %}peelfield{% endblock%}

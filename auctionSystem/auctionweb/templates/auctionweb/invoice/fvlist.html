@@ -1,0 +1,39 @@
+
+{% extends "auctionweb/layout.html" %}
+
+{% block header_js %}
+<style>
+    .ceTable{text-align:center}
+</style>
+{% endblock%}
+{% block content %}
+<table class="display" id="finTable" cellspacing="0" width="100%">
+    <thead>
+        <tr>
+            <th><span>发票号</span></th>
+            <th><span>客户号</span></th>
+            <th><span>品种</span></th>
+            <th><span>数量</span></th>
+            <th><span>状态</span></th>
+        </tr>
+    </thead>
+</table>
+{% endblock %}
+{% block footer_js %}
+    <script type="text/javascript">
+        var finTable = $("#finTable").DataTable({
+            "searching": true,
+            //"info": false,
+           // "paging": false,
+            "ajaxSource":"{% url 'fvjson' %}",
+            "columns":[
+                {"data": "invoice_nu"},
+                {"data": "customer_id"},
+                {"data": "goods_type"},
+                {"data": "goods_nu"},
+                {"data": null}
+            ]
+        })
+    </script>
+{% endblock %}
+{% block navname %}invoice{% endblock navname %}

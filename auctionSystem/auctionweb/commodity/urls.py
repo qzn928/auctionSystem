@@ -6,6 +6,8 @@ from django.conf.urls import patterns, include, url
 
 urlpatterns = patterns('auctionweb.commodity.views',
     url(r'^add/', "add", {"template_name": "auctionweb/commodity/add.html"}, name="cadd"),
+    url(r'^change/(?P<lot_nu>\d+)/$', "change", {"template_name": "auctionweb/commodity/add.html"}, name="cchange"),
     url(r'^copy/', "copy_last_form", {"template_name": "auctionweb/commodity/addform.html"}, name="aform"),
-    url(r'^list/', "clist", name="alist"),
+    url(r'^ajaxlist/', "ajax_list_data", name="ajax_list"),
+    url(r'^delete/', "delete", name="cdel"),
 )

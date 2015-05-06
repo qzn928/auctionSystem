@@ -65,8 +65,6 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': "auction",
-        "user": "root",
-        "password": "qzn928",
     }
 }
 

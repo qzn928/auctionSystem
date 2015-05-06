@@ -47,7 +47,9 @@ table.dataTable thead .sorting_desc_disabled {
   background-position: center right;
 }
 table.dataTable thead .sorting {
-  background-image: url("../images/sort_both.png");
+  /*tables sorting*/
+  /*background-image: url("../images/sort_both.png");*/
+   
 }
 table.dataTable thead .sorting_asc {
   background-image: url("../images/sort_asc.png");
@@ -172,7 +174,7 @@ table.dataTable.display tbody tr:hover.selected > .sorting_3, table.dataTable.or
   background-color: #a4b2cb;
 }
 table.dataTable.no-footer {
-  border-bottom: 1px solid #111;
+  border-bottom: 0px;
 }
 table.dataTable.nowrap th, table.dataTable.nowrap td {
   white-space: nowrap;
@@ -287,6 +289,8 @@ table.dataTable td {
 }
 .dataTables_wrapper .dataTables_filter input {
   margin-left: 0.5em;
+  border: 1px solid #ccc;
+  height: 32px;
 }
 .dataTables_wrapper .dataTables_info {
   clear: both;
@@ -302,7 +306,7 @@ table.dataTable td {
   box-sizing: border-box;
   display: inline-block;
   min-width: 1.5em;
-  padding: 0.5em 1em;
+  padding: 0.15em 0.8em;
   margin-left: 2px;
   text-align: center;
   text-decoration: none !important;
@@ -452,4 +456,24 @@ table.dataTable td {
   .dataTables_wrapper .dataTables_filter {
     margin-top: 0.5em;
   }
+}
+.dataTable > tbody > tr > td, .dataTable > thead > tr > th{
+  border-left: 1px solid #ccc;
+  border-top: 1px solid #ccc;
+  padding: 10px;
+  border-bottom: 1px solid #ccc;
+}
+.dataTable > thead > tr > th, .dataTable > thead > tr > td{
+/*  background-color: #ABABAB;
+  background: linear-gradient(to bottom, #FFFFFF, #ABABAB);
+  background: -webkit-gradient(linear, left top, left bottom, from(#FFFFFF), to(#ABABAB));
+  background: -webkit-linear-gradient(top, #FFFFFF, #ABABAB);
+  background: -moz-linear-gradient(top, #FFFFFF, #ABABAB);
+  background: -ms-linear-gradient(top, #FFFFFF, #ABABAB);
+  background: -o-linear-gradient(top, #FFFFFF, #ABABAB);
+  background: linear-gradient(to bottom, #FFFFFF, #ABABAB);
+  -webkit-box-shadow: 0 1px 0 rgba(255, 255, 255, .8) inset;
+  -moz-box-shadow: 0 1px 0 rgba(255, 255, 255, .8) inset;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, .8) inset;
+*/
 }
