@@ -1,0 +1,17 @@
+setup.py
+AuctionSystem.egg-info/PKG-INFO
+AuctionSystem.egg-info/SOURCES.txt
+AuctionSystem.egg-info/dependency_links.txt
+AuctionSystem.egg-info/not-zip-safe
+AuctionSystem.egg-info/requires.txt
+AuctionSystem.egg-info/top_level.txt
+auctionSystem/__init__.py
+auctionSystem/settings.py
+auctionSystem/urls.py
+auctionSystem/wsgi.py
+auctionweb/__init__.py
+auctionweb/adminx.py
+auctionweb/models.py
+auctionweb/tests.py
+auctionweb/views.py
+auctionweb/migrations/__init__.py
