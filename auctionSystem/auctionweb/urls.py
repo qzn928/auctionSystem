@@ -18,6 +18,8 @@ urlpatterns = patterns('',
 
     url(r'mangercenter/', include(xadmin.site.urls)),
     url(r'^$', "auctionweb.views.index", {"template_name": 'auctionweb/default.html'}, name="default"),
+    url(r'^commodity/', include("auctionweb.commodity.urls")),
+    url(r'^invoice/', include("auctionweb.invoice.urls")),
 )
 if settings.DEBUG: #在开发时使用django来返回静态文件
     urlpatterns += patterns(

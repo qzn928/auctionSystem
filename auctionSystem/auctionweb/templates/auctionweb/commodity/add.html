@@ -1,0 +1,42 @@
+{% extends 'auctionweb/layout.html' %}
+
+{% block header_js %}
+<style>
+    .form-add{margin:0 auto;margin-top:20px;}
+    .form-add input{margin-left:20px;width:400px}
+    .formControl {height:700px}
+</style>
+{% endblock %}
+
+{% block content %}
+    <div class="alert alert-info">
+        <label>提示:add lot information</label>
+        <span style="float:right"><input type="button" value="复制表单" id="copyForm" style="width:150px"></span>
+    </div>
+    <div class="form-add well" id="formControl">
+        <form class="form-horizontal" action="." method="POST">
+          {% csrf_token %}
+          <div id="addForm">
+          {% include "auctionweb/commodity/addform.html"%}
+          </div>
+          <input type="submit" class="btn btn-success" style="margin-left: 160px;" value="提交"/> 
+        </form> 
+    </div>
+{% endblock %}
+{% block footer_js %}
+    <script>
+        $("#formControl").find("input").addClass("form-control")
+        //复制表单
+        $("#copyForm").on("click", function(){
+            $.getJSON("{% url 'aform' %}", function(data){
+                if (!data.success){
+                    alert(data.error_message);
+                    return
+                }
+                var data = data.data;
+                console.log(data);
+                $("#addForm").empty().html(data.html)
+            })
+        })
+    </script>
+{% endblock %}

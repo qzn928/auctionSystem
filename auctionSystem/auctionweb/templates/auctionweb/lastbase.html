@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <title>{% block title%}拍卖系统{% endblock %}</title>
+        <link rel=stylesheet type=text/css href="/static/css/style.css">
+        <link rel=stylesheet type=text/css href="/static/css/bootstrap.css">
+        <script src="/static/js/jquery-1.10.2.js"></script>
+        <script src="/static/js/jquery.form.js"></script>
+        <script src="/static/js/bootstrap.js"></script>
+        <script src="/static/js/echarts-all.js"></script>
+        <script src="/static/js/underscore/underscore.js"></script>
+        <script src="/static/js/backbone/backbone.js"></script>
+        {% block head %}{% endblock %}
+        <style>
+            body {background-color:#E5E5E5}
+            .main {margin:0 auto;background-color:white;}
+            h3{margin-top:0px}
+            ul li {margin-left:10px}
+        </style>    
+    </head>
+    <body>
+        <div class="main">
+            <div>
+                <span><h3>拍卖系统管理器</h3></span>
+            </div>
+            <nav class="navbar navbar-default" role="navigation">
+                <div class="container-fluid" style="margin-left:150px">
+                <!-- Collect the nav links, forms, and other content for toggling -->
+                <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                  <ul class="nav navbar-nav" id="nav-ul">
+                    <li class="active"><a href="{% url 'default'%}">lot about invoice </a></li>
+                    <li><a href="#">invoice list</a></li>
+                    <li><a href="#">peelfield</a></li>
+                  </ul>
+                </div><!-- /.navbar-collapse -->
+                </div><!-- /.container-fluid -->
+            </nav>
+            <div id="content">
+                {% block content %}{% endblock %}
+            </div>
+        </div>
+        {% block footer_block %}
+        {% endblock %}
+    </body>
+    <script type="text/javascript">
+        $(document).ready(function(){
+            $("#nav-ul li").on("click", function(){
+                $("#nav-ul li").each(function(){
+                    $(this).removeClass("active");
+                });
+                $(this).addClass("active");
+            })
+        
+        })              
+    </script>
+    {% block footer_js %}{% endblock %}
+</html>
