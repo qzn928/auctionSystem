@@ -28,7 +28,7 @@
  *    */
 div.DTTT_container {
     position: relative;
-    float: right;
+    float: left;
     margin-bottom: 1em;
 }
 
@@ -81,6 +81,8 @@ a.DTTT_button {
     background:      -o-linear-gradient(top, #ffffff 0%,#f3f3f3 89%,#f9f9f9 100%); /* Opera 11.10+ */
     background:         linear-gradient(top, #ffffff 0%,#f3f3f3 89%,#f9f9f9 100%); /* W3C */
     filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ffffff', endColorstr='#f9f9f9',GradientType=0 ); /* IE6-9 */
+    line-height: 20px;
+    margin-right: 8px;
 }
 
 
