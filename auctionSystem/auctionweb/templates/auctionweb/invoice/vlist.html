@@ -97,7 +97,7 @@
                                     all_lot_nu.push(n.lot)
                                 })
                                 console.log(all_lot_nu)
-                                $.post("/invoice/modify/lot"+invoice_id+"", {data:JSON.stringify(all_lot_nu)}, function(data){
+                                $.post("/invoice/modify/lot/"+invoice_id+"", {data:JSON.stringify(all_lot_nu)}, function(data){
                                     if (!data.success){
                                         alert(data.errors)
                                     }else{
@@ -138,20 +138,24 @@
                         "sButtonText": "修改发票",
                         "fnClick": function(nButton, oConfig, oFlash){
                             var ott = TableTools.fnGetInstance("preTable");
-                            console.log(ott)
                             var selectAtrs = ott.fnGetSelectedData();
                             if (selectAtrs.length!=1){
                                 alert("请选择一行进行修改")
                                 return false
                             }
                            $.getJSON('/invoice/modify/info/'+selectAtrs[0].id+'', function(data){
-                                console.log(data.data)
                                 if (data.success){
                                     $("#addForm").empty().html(data.data.html)
                                     $("#modifyModal").modal();
                                     $("#vmodifyForm").ajaxForm({
                                         type: "POST",
-                                        url: ""
+                                        data: {"invoice_id": selectAtrs[0].id, "commodity": selectAtrs[0].commodity},
+                                        success: function(data){
+                                            if (data.success){
+                                                preTable.ajax.reload();
+                                                $("#modifyModal").find("button[data-dismiss]").trigger("click")
+                                            }
+                                        }
                                     })
                                 }   
                            })
@@ -160,7 +164,25 @@
                         "sExtends": "text",
                         "sButtonText": "创建最终发票",
                         "fnClick": function(nButton, oConfig, oFlash){
-                            location.href="{% url 'cadd'%}"
+                            var ott = TableTools.fnGetInstance("preTable");
+                            var selectAtrs = ott.fnGetSelectedData();
+                            if (selectAtrs.length!=1){
+                                alert("请选择一行进行生成")
+                                return false
+                            }
+                            if (!selectAtrs[0].auction_invoice || !selectAtrs[0].final_exchange_rate){
+                                alert("发票号和汇率都不能为空")
+                                return false
+                            }
+                            $.getJSON("/invoice/cfinvoice/"+selectAtrs[0].id+"", function(data){
+                                if (data.success){
+                                    preTable.ajax.reload();
+                                    alert("最终发票成功生成");
+                                }else{
+                                    alert("error: "+data.errors+"")
+                                }
+                            })
+                            
                         }
                     },{
                         "sExtends": "text",
@@ -173,7 +195,7 @@
                                 alert("请选择一行进行查看")
                                 return false
                             }
-                            console.log(selectAtrs[0].invoice_nu)
+                            $("#lotTable").DataTable().destroy();
                             get_invoice_lot(selectAtrs[0].id)
                             $("#lotModal").modal()
                         }
@@ -186,6 +208,11 @@
                 {"data": "customer_id"},
                 {"data": "modify_date", "fnCreatedCell":function(nTd, sData, oData, iRow, iCol){
                     element = $(nTd).empty();
+                    var modify_date = oData["modify_date"];
+                    var modify_times = oData["modify_times"];
+                    if (modify_date && modify_times){
+                        element.append("<span>"+modify_times+"+"+modify_date+"</span>")
+                    }
                 }},
                 {"data": "goods_type"},
                 {"data": "goods_nu"},
@@ -197,4 +224,4 @@
         })
     </script>
 {% endblock %}
-
+{% block navname %}invoice{%endblock%}

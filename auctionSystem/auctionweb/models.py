@@ -62,21 +62,29 @@ class Commodity(models.Model):
     # 发票生成标志
     is_invoice = models.IntegerField() 
     # 削皮场
-    peel_field = models.ForeignKey(PeelField) 
+    peel_field = models.ForeignKey(PeelField, null=True) 
     # 削皮指示
     peel_inform = models.CharField(max_length=100) 
     def __str__(self):
         return self.lot
 
     def toDICT(self):
-        return dict(
-            [(field, getattr(self, field)) for field in \
-            [f.name for f in self._meta.fields if f.name!="peel_field"]
-        ])
+        commodity = []
+        fields = [f.name for f in self._meta.fields]
+        for field in fields:
+            if field == "peel_field":
+                try:
+                    commodity.append(("peel_field", getattr(getattr(self, field), "name")))
+                except AttributeError:
+                    commodity.append(("peel_field", ''))
+            else:
+                commodity.append((field, getattr(self, field)))
+        return dict(commodity)
 
 class Invoice(models.Model):
     """发票"""
-    commodity = models.ForeignKey(Commodity)
+    # 商品lot号, 以逗号隔开(001,002...)
+    commodity = models.CharField(max_length=100)
     # 发票号
     invoice_nu = models.CharField(max_length=20) 
     # 客户号
@@ -90,16 +98,39 @@ class Invoice(models.Model):
     # 生皮总金额
     cost_sum = models.IntegerField() 
     # 拍卖会发票
-    auction_invoice = models.CharField(max_length=50) 
+    auction_invoice = models.CharField(max_length=50, null=True) 
     # 最终汇率
-    final_exchange_rate = models.FloatField() 
+    final_exchange_rate = models.FloatField(null=True) 
     # 初始汇率
     begin_exchange_rate = models.FloatField() 
     # 佣金比例
-    commission_rate = models.FloatField() 
+    commission_rate = models.FloatField(null=True) 
     # 修改次数
-    modify_times = models.IntegerField() 
+    modify_times = models.IntegerField(null=True) 
     # 修改时间
-    modify_date = models.DateField() 
+    modify_date = models.DateTimeField(null=True) 
+    # 是否是preinvoice
+    is_pre = models.IntegerField(default=1) 
     def __str__(self):
         return self.invoice_nu
+
+    @classmethod
+    def get_last_nu(cls):
+        flag_str = "#00"
+        o_count = cls.objects.all().count()
+        return flag_str + str(o_count+1)
+
+    def toDICT(self):
+#        return dict(
+#            [(field, getattr(self, field)) for field in \
+#            [f.name for f in self._meta.fields ]
+#        ])
+        invoice_data = []
+        fields = [f.name for f in self._meta.fields]
+        for field in fields:
+            field_val = getattr(self, field)
+            if field == "modify_date" and field_val:
+                invoice_data.append((field, field_val.strftime("%Y-%m-%d %H:%M")))
+            else:
+                invoice_data.append((field, field_val))
+        return dict(invoice_data)

@@ -34,9 +34,10 @@
                     return
                 }
                 var data = data.data;
-                console.log(data);
+                console.log(data.html)
                 $("#addForm").empty().html(data.html)
             })
         })
     </script>
 {% endblock %}
+{% block navname%}commodity{% endblock %}
