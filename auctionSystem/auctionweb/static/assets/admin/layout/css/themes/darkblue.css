@@ -280,7 +280,8 @@ Page Header
 .page-header.navbar .hor-menu.hor-menu-light .navbar-nav > li.active > a > i,
 .page-header.navbar .hor-menu.hor-menu-light .navbar-nav > li.active > a:hover > i, .page-header.navbar .hor-menu.hor-menu-light .navbar-nav > li.current > a > i,
 .page-header.navbar .hor-menu.hor-menu-light .navbar-nav > li.current > a:hover > i {
-  color: #788ea8;
+  /*color: #788ea8;*/
+    color: #fff;
 }
 .page-header.navbar .hor-menu.hor-menu-light .navbar-nav > li .dropdown-menu {
   box-shadow: 5px 5px rgba(102, 102, 102, 0.1);

@@ -7,25 +7,37 @@
     </style>
 {% endblock%}
 {% block content %}
-<table class="display" id="lotTable" cellspacing="0" width="100%">
-    <thead>
-        <tr>
-            <th style="width:100px;text-align:center"><span>生成发票</span></th>
-            <th><span>品种</span></th>
-            <th><span>性别</span></th>
-            <th><span>LOT号</span></th>
-            <th><span>客户编号</span></th>
-            <th><span>尺码</span></th>
-            <th><span>等级</span></th>
-            <th><span>颜色</span></th>
-            <th><span>清晰度</span></th>
-            <th><span>数量</span></th>
-            <th><span>敲锤价</span></th>
-            <th><span>评估</span></th>
-            <th><span>备注</span></th>
-         <!--   <th><span>操作</span></th>-->
-        </tr>
-    </thead>
+<div class="portlet box green">
+    <div class="portlet-title">
+        <div class="caption">
+            <i class="fa fa-gift"></i>
+            Product List
+        </div>
+        <div class="tools hidden-xs">
+            <a href="javascript:;" class="collapse">
+            </a>
+        </div>
+    </div>
+    <div class="portlet-body">
+        <table class="display" id="lotTable" cellspacing="0" width="100%">
+            <thead>
+                <tr>
+                    <th style="width:100px;text-align:center"><span>生成发票</span></th>
+                    <th><span>品种</span></th>
+                    <th><span>性别</span></th>
+                    <th><span>LOT号</span></th>
+                    <th><span>客户编号</span></th>
+                    <th><span>尺码</span></th>
+                    <th><span>等级</span></th>
+                    <th><span>颜色</span></th>
+                    <th><span>清晰度</span></th>
+                    <th><span>数量</span></th>
+                    <th><span>敲锤价</span></th>
+                    <th><span>评估</span></th>
+                    <th><span>备注</span></th>
+                    <!--   <th><span>操作</span></th>-->
+                </tr>
+            </thead>
  <!--   <tbody>
         {% for comm in c_list %}
         <tr data-lotnu='{{comm.lot}}'>
@@ -52,7 +64,9 @@
         {% endfor %}
     </tbody>
     -->
-</table>
+        </table>
+    </div>
+</div>
 
 {% endblock %}
 <!-- Modal -->
