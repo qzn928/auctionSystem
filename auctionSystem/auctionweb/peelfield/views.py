@@ -42,20 +42,11 @@ def add_peel_field(request, template_name):
         lot_nu = request.POST.get("lot_nu")
         try:
             c_obj = Commodity.objects.get(lot=lot_nu)
+            peel_field = PeelField.objects.get(name=request.POST.get("peelfield"))
         except Commodity.DoesNotExist:
-            return ajax_error("Commodity is not exist")
-        form = PeelFieldForm(request.POST)
-        if form.is_valid():
-            peel_obj = form.save()
-            c_obj.peel_field = peel_obj
-            c_obj.save()
-            return ajax_success()
-        else:
-            return ajax_error(form.errors)
-    form = PeelFieldForm()
-    html = render_to_string(
-        template_name,
-        {"form": form},
-        context_instance=RequestContext(request)
-    )
-    return ajax_success(html=html)
+            return ajax_error("Commodity or peelfield is not exist")
+        c_obj.peel_field = peel_field
+        c_obj.save()
+        return ajax_success()
+    all_peel_name = [peel.name for peel in PeelField.objects.all()]
+    return ajax_success(all_peel_name)
