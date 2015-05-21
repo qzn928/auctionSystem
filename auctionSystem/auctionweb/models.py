@@ -4,15 +4,6 @@ from django.db import models
 '''
 auctionSystem 总model文件
 '''
-class Variety(models.Model):
-    """
-    货物品种
-    """
-    # 品种名称
-    name = models.CharField(max_length=50)
-       
-    def __unicode__(self):
-        return self.name
     
 class AuctionField(models.Model):
     """
@@ -20,12 +11,20 @@ class AuctionField(models.Model):
     """
     # 拍卖场名字
     name = models.CharField(max_length=50)
-    # 品种
-    varieties = models.ForeignKey(Variety, unique=True)
     # 货币种类
     currency = models.CharField(max_length=50)
 
-    def __unicode__(self):
+    def __str__(self):
+        return self.name
+
+class Variety(models.Model):
+    """
+    货物品种
+    """
+    # 品种名称
+    name = models.CharField(max_length=50)
+    auction = models.ManyToManyField(AuctionField)   
+    def __str__(self):
         return self.name
 
 class Customer(models.Model):
@@ -60,7 +59,7 @@ class PeelField(models.Model):
 class Commodity(models.Model):
     """商品"""
     # 商品lot号
-    lot = models.CharField(max_length=20, primary_key=True) 
+    lot = models.CharField(max_length=20, unique=True) 
     # 品种
     types = models.CharField(max_length=50) 
     # 性别
@@ -89,9 +88,8 @@ class Commodity(models.Model):
     peel_field = models.ForeignKey(PeelField, null=True) 
     # 削皮指示
     peel_inform = models.CharField(max_length=100) 
-    # 品种
-    variety = models.OneToOneField(Variety)
-
+    # 拍卖场
+    auction = models.ForeignKey(AuctionField)
     def __str__(self):
         return self.lot
 
@@ -148,10 +146,6 @@ class Invoice(models.Model):
         return flag_str + str(o_count+1)
 
     def toDICT(self):
-#        return dict(
-#            [(field, getattr(self, field)) for field in \
-#            [f.name for f in self._meta.fields ]
-#        ])
         invoice_data = []
         fields = [f.name for f in self._meta.fields]
         for field in fields:

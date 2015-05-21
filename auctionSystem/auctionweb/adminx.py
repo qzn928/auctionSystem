@@ -28,4 +28,13 @@ class InvoiceAdmin(object):
     pass
 xadmin.site.register(Invoice, InvoiceAdmin)
 
+class AuctionFieldAdmin(object):
+    pass
+
+xadmin.site.register(AuctionField, AuctionFieldAdmin)
+
+class VarietyAdmin(object):
+    pass
+    
+xadmin.site.register(Variety, VarietyAdmin)
 
