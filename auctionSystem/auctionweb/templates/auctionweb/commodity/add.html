@@ -9,21 +9,80 @@
 {% endblock %}
 
 {% block content %}
-    <div class="alert alert-info">
-        <label>提示:add lot information</label>
-        <span style="float:right"><input type="button" value="复制表单" id="copyForm" style="width:150px"></span>
+<div class="portlet box green" id="form_wizard_1">
+    <div class="portlet-title">
+        <div class="caption">
+            <i class="fa fa-gift"></i>
+            Product Add
+        </div>
+        <div class="tools hidden-xs">
+            <a href="javascript:;" class="collapse">
+            </a>
+        </div>
     </div>
-    <div class="form-add well" id="formControl">
+    <div class="portlet-body  form">
+
+    <div class="" id="formControl">
         <form class="form-horizontal" action="." method="POST">
-          {% csrf_token %}
-          <div id="addForm">
-          {% include "auctionweb/commodity/addform.html"%}
-          </div>
-          <input type="submit" class="btn btn-success" style="margin-left: 160px;" value="提交"/> 
-        </form> 
+            <div class="form-wizard">
+                <div class="form-body">
+                     <ul class="nav nav-pills nav-justified steps">
+                        <li>
+                            <a href="#tab1" data-toggle="tab" class="step">
+                                <span class="number">1 </span>
+                                <span class="desc"><i class="fa fa-check"></i> Account Setup </span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#tab2" data-toggle="tab" class="step">
+                                <span class="number">2 </span>
+                                <span class="desc"><i class="fa fa-check"></i> Profile Setup </span>
+                            </a>
+                        </li>
+                    </ul>
+                    <div id="bar" class="progress progress-striped" role="progressbar">
+                        <div class="progress-bar progress-bar-success">
+                        </div>
+                    </div>
+                    <div class="tab-content">
+                    <div class="alert alert-info">
+                        <label>提示:add lot information</label>
+                        <span style="float:right"><input type="button" value="复制表单" id="copyForm" style="width:150px"></span>
+                    </div>
+                          {% csrf_token %}
+                          <div id="addForm">
+                          {% include "auctionweb/commodity/modform.html"%}
+                          </div>
+                    </div>
+                </div>
+                <div class="form-actions">
+                        <div class="row">
+                            <div class="col-md-offset-3 col-md-9">
+                                <a href="javascript:;" class="btn default button-previous">
+                                    <i class="m-icon-swapleft"></i> Back </a>
+                                <a href="javascript:;" class="btn blue button-next">
+                                 Continue <i class="m-icon-swapright m-icon-white"></i>
+                                   </a>
+                                <a href="javascript:;" class="btn green button-submit">
+                                 Submit <i class="m-icon-swapright m-icon-white"></i>
+                                 </a>
+                            </div>
+                        </div>
+                </div>
+
+            </div>
+            </form>
+        </div>
+    </div>
     </div>
 {% endblock %}
 {% block footer_js %}
+<!-- BEGIN PAGE LEVEL PLUGINS -->
+<script type="text/javascript" src="/static/assets/plugins/jquery-validation/js/jquery.validate.min.js"></script>
+<script type="text/javascript" src="/static/assets/plugins/jquery-validation/js/additional-methods.min.js"></script>
+<script type="text/javascript" src="/static/assets/plugins/bootstrap-wizard/jquery.bootstrap.wizard.min.js"></script>
+<!-- END PAGE LEVEL PLUGINS -->
+   <script src="/static/assets/admin/pages/scripts/form-wizard.js" type="text/javascript"></script>
     <script>
         $("#formControl").find("input").addClass("form-control")
         //复制表单
