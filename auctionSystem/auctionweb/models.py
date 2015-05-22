@@ -97,11 +97,11 @@ class Commodity(models.Model):
         commodity = []
         fields = [f.name for f in self._meta.fields]
         for field in fields:
-            if field == "peel_field":
+            if field == "peel_field" or field=="auction":
                 try:
-                    commodity.append(("peel_field", getattr(getattr(self, field), "name")))
+                    commodity.append((field, getattr(getattr(self, field), "name")))
                 except AttributeError:
-                    commodity.append(("peel_field", ''))
+                    commodity.append((field, ''))
             else:
                 commodity.append((field, getattr(self, field)))
         return dict(commodity)

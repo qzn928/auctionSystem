@@ -57,7 +57,10 @@
       </div>
         <form class="form-horizontal" role="form" action="{% url 'padd' %}" id="paddForm"> 
           <div class="modal-body">
-                <div class="form-body" style="padding-bottom:0px" id="paddFormContent">
+                <div class="form-body" style="padding-bottom:0px;margin-left:20px" id="paddFormContent">
+                    <label>选择削皮场</label>
+                    <select id="peelSelect" name="peelfield" style="width:100px;margin-left:20px">
+                    </select>
                 </div>
           </div>
           <div class="modal-footer">
@@ -106,16 +109,25 @@
                                 return false
                             }
                             $.getJSON("{% url 'padd' %}", function(data){
-                                $("#paddFormContent").empty().html(data.data.html)
+                              //  $("#paddFormContent").empty().html(data.data.html)
+                              for (i in data.data){
+                               // sdata.push({id: i, text: data.data[i]})
+                               if (i==0){
+                                   $("#peelSelect").append("<option selected>"+data.data[i]+"</option>")
+                               }else{
+                                   $("#peelSelect").append("<option>"+data.data[i]+"</option>")
+                               }
+                              }
+                              $("#peelSelect").select2()
                             })
                             $("#paddModal").modal();
-                            console.log("11111111")
                             $("#paddForm").ajaxForm({
                                 type: "post",
                                 data: {"lot_nu": selectAtrs[0].lot, "csrfmiddlewaretoken": $("{%csrf_token%}").val()},
                                 success: function(data){
                                     if (data.success){
-                                        alert("添加成功")
+                                        $("#paddModal").find("button[data-dismiss]").trigger("click")
+                                        lotTable.ajax.reload();
                                     }else{
                                         alert(data.error_messages)
                                     }
