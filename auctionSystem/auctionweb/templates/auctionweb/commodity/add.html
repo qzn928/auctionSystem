@@ -5,6 +5,8 @@
     .form-add{margin:0 auto;margin-top:20px;}
     .form-add input{margin-left:20px;width:400px}
     .formControl {height:700px}
+     #copyForm{color: #fff; border: 1px solid #fff;}
+     #copyForm i{color: #fff;margin-right: 5px;}
 </style>
 {% endblock %}
 
@@ -13,17 +15,22 @@
     <div class="portlet-title">
         <div class="caption">
             <i class="fa fa-gift"></i>
-            Product Add
+            Add lot information
         </div>
-        <div class="tools hidden-xs">
+         <div class="tools">
             <a href="javascript:;" class="collapse">
             </a>
         </div>
+        <div class="actions">
+            <a href="javascript:;" id="copyForm" class="btn btn-default btn-sm">
+                <i class="fa fa-copy"></i>copy form</a>
+        </div>
+
     </div>
     <div class="portlet-body  form">
 
     <div class="" id="formControl">
-        <form class="form-horizontal" action="." method="POST">
+        <form class="form-horizontal" id="submit_form" action="." method="POST">
             <div class="form-wizard">
                 <div class="form-body">
                      <ul class="nav nav-pills nav-justified steps">
@@ -45,14 +52,8 @@
                         </div>
                     </div>
                     <div class="tab-content">
-                    <div class="alert alert-info">
-                        <label>提示:add lot information</label>
-                        <span style="float:right"><input type="button" value="复制表单" id="copyForm" style="width:150px"></span>
-                    </div>
                           {% csrf_token %}
-                          <div id="addForm">
                           {% include "auctionweb/commodity/modform.html"%}
-                          </div>
                     </div>
                 </div>
                 <div class="form-actions">
