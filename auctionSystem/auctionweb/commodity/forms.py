@@ -13,4 +13,4 @@ class CommodityForm(forms.ModelForm):
     
     class Meta:
         model = Commodity
-        exclude = ("peel_field",)
+        exclude = ("peel_field", "auction")

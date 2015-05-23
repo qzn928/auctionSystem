@@ -21,6 +21,8 @@ urlpatterns = patterns('',
     url(r'^commodity/', include("auctionweb.commodity.urls")),
     url(r'^invoice/', include("auctionweb.invoice.urls")),
     url(r'^peelfield/', include("auctionweb.peelfield.urls")),
+    url(r'^login/', "auctionweb.views.login", {"template_name": "auctionweb/login.html"}, name="login"),
+    url(r'^logout/', "auctionweb.views.logout", name="logout"),
 )
 if settings.DEBUG: #在开发时使用django来返回静态文件
     urlpatterns += patterns(

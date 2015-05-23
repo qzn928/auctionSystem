@@ -10,7 +10,7 @@ class AuctionField(models.Model):
     拍卖场
     """
     # 拍卖场名字
-    name = models.CharField(max_length=50)
+    name = models.CharField(max_length=50, unique=True)
     # 货币种类
     currency = models.CharField(max_length=50)
 
