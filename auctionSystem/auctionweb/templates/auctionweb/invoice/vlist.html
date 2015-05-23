@@ -49,7 +49,7 @@
         <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
         <h4 class="modal-title" id="myModalLabel">发票相关的商品信息</h4>
       </div>
-      <table class="display" id="lotTable" cellspacing="0" width="100%">
+      <table style="margin-bottom:20px" class="display" id="lotTable" cellspacing="0" width="100%">
         <thead>
           <tr>
             <th><span>品种</span></th>
@@ -96,7 +96,7 @@
                     "aButtons":[
                         {
                             "sExtends": "text",
-                            "sButtonText": "del lot",
+                            "sButtonText": "delete commodity",
                             "fnClick": function(nButton, oConfig, oFlash){
                                 var ott = TableTools.fnGetInstance("lotTable");
                                 var selectAtrs = ott.fnGetSelectedData();
@@ -148,7 +148,7 @@
                 "aButtons":[
                     {
                         "sExtends": "text",
-                        "sButtonText": "修改发票",
+                        "sButtonText": "modify",
                         "fnClick": function(nButton, oConfig, oFlash){
                             var ott = TableTools.fnGetInstance("preTable");
                             var selectAtrs = ott.fnGetSelectedData();
@@ -175,7 +175,7 @@
                         }
                     },{
                         "sExtends": "text",
-                        "sButtonText": "创建最终发票",
+                        "sButtonText": "create final invoice",
                         "fnClick": function(nButton, oConfig, oFlash){
                             var ott = TableTools.fnGetInstance("preTable");
                             var selectAtrs = ott.fnGetSelectedData();
@@ -199,7 +199,7 @@
                         }
                     },{
                         "sExtends": "text",
-                        "sButtonText": "查看详情",
+                        "sButtonText": "view",
                         "fnClick": function(nButton, oConfig, oFlash){
                             var ott = TableTools.fnGetInstance("preTable");
                             console.log(ott)

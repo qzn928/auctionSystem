@@ -22,7 +22,7 @@
         <table class="display" id="lotTable" cellspacing="0" width="100%">
             <thead>
                 <tr>
-                    <th style="width:100px;text-align:center"><span>生成发票</span></th>
+                    <th style="width:100px;text-align:center"><span>选择</span></th>
                     <th><span>品种</span></th>
                     <th><span>性别</span></th>
                     <th><span>LOT号</span></th>
@@ -129,13 +129,13 @@
                 "aButtons":[
                     {
                         "sExtends": "text",
-                        "sButtonText": "add lot",
+                        "sButtonText": "create commodity",
                         "fnClick": function(nButton, oConfig, oFlash){
                             location.href="{% url 'cadd'%}"
                         }
                     },{
                         "sExtends": "text",
-                        "sButtonText": "crate invoice",
+                        "sButtonText": "crate preinvoice",
                         "fnClick": function(nButton, oConfig, oFlash){
                             var ott = lotTable.row(".selected")
                             if(ott.length!=1){
@@ -174,7 +174,7 @@
                         }
                     },{
                         "sExtends": "text",
-                        "sButtonText": "modify lot",
+                        "sButtonText": "modify commodity",
                         "fnClick": function(nButton, oConfig, oFlash){
                             var ott = lotTable.row(".selected")
                             if(ott.length!=1){
@@ -186,7 +186,7 @@
                         }
                     },{
                         "sExtends": "text",
-                        "sButtonText": "del lot",
+                        "sButtonText": "delete commodity",
                         "fnClick": function(nButton, oConfig, oFlash){
                             var ott = lotTable.row(".selected")
                             if (ott.length<1){alert("至少选择一条数据删除!")}

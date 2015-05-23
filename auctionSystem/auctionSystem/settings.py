@@ -38,9 +38,9 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'auctionweb',
-   # 'xadmin',
-   # 'crispy_forms',
-   # 'reversion'
+    'xadmin',
+    'crispy_forms',
+    'reversion'
 )
 
 MIDDLEWARE_CLASSES = (
@@ -63,7 +63,7 @@ WSGI_APPLICATION = 'auctionSystem.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
+        'ENGINE': 'django.db.backends.mysql',
         'NAME': "auction",
     }
 }
