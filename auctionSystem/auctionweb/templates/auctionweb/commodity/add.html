@@ -100,6 +100,7 @@
                 var data = data.data;
                 $("#addForm").empty().html(data.html)
                 $("#formControl").find("input").addClass("form-control")
+                get_select();
                 //$('button-previous').trigger('click');
             })
         })
@@ -110,11 +111,14 @@
             }
             $("#"+element).select2({data: select_data})
         }
-        $.getJSON("{% url 'get_field_select'%}", function(data){
-            for (i in data.data){
-                bind_select(i, data.data[i])
-            }
-        })
+        function get_select(){
+            $.getJSON("{% url 'get_field_select'%}", function(data){
+                for (i in data.data){
+                    bind_select(i, data.data[i])
+                }
+            })
+        }
+        get_select()
         $("#id_auction").on("change", function(){
             var s_auction_val = $(this).val();
             $.post("{% url 'get_field_select' %}", {data:JSON.stringify({auction:s_auction_val})},function(data){
