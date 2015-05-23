@@ -89,3 +89,7 @@ STATIC_URL = '/static/'
 MEMCACHES = ["127.0.0.1:11211"]
 LOGIN_REDIRECT_URL = "/"
 LOGIN_URL = "/login"
+try:
+    import local_settings
+except:
+    pass
