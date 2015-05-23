@@ -6,9 +6,9 @@ from django.conf.urls import patterns, include, url
 from django.conf import settings
 
 import xadmin
-xadmin.autodiscover()
-from xadmin.plugins import xversion
-xversion.register_models()
+#xadmin.autodiscover()
+#from xadmin.plugins import xversioncho
+#xversion.register_models()
 
 PROJECTROOT = os.path.dirname(os.path.abspath(__file__))
 urlpatterns = patterns('',
@@ -16,7 +16,7 @@ urlpatterns = patterns('',
     # url(r'^$', 'auctionSystem.views.home', name='home'),
     # url(r'^blog/', include('blog.urls')),
 
-    url(r'mangercenter/', include(xadmin.site.urls)),
+  #  url(r'mangercenter/', include(xadmin.site.urls)),
     url(r'^$', "auctionweb.commodity.views.list", {"template_name": 'auctionweb/commodity/list.html'}, name="clist"),
     url(r'^commodity/', include("auctionweb.commodity.urls")),
     url(r'^invoice/', include("auctionweb.invoice.urls")),
