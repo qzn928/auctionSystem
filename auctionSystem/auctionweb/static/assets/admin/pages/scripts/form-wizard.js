@@ -81,8 +81,11 @@ var FormWizard = function () {
                 },
                 onNext: function (tab, navigation, index) {
 
-
-                    if (form.valid() == false) {
+                    if ($("#id_aution").val() == "") {
+                        $('.alert-danger').html("You need to select aution.Please check below.").show();
+                        return false;
+                    } if ($("#id_variety").val() == "") {
+                         $('.alert-danger').html("variety can not be null.Please check below.").show();
                         return false;
                     }
 
