@@ -1,29 +1,43 @@
 
         <div class="tab-pane active" id="tab1">
-            <h3 class="block">Provide your account details</h3>
+            <h3 class="block">choose auction and variety</h3>
             <div class="form-group">
                 <label class="control-label col-md-3">
-                    Username <span class="required">* </span>
+                    Auction<span class="required">* </span>
                 </label>
                 <div class="col-md-4">
-                    <input type="text" class="form-control" name="username" />
+                    <input type="text" class="form-control" name="auction" id="id_auction"/>
                     <span class="help-block">
-						Provide your username </span>
+						choose commodity auction </span>
                 </div>
             </div>
-
+            <div class="form-group">
+                <label class="control-label col-md-3">
+                    Variety<span class="required">* </span>
+                </label>
+                <div class="col-md-4">
+                    <input type="text" class="form-control" name="variety" id="id_variety"/>
+                    <span class="help-block">
+						choose commodity variety</span>
+                </div>
+            </div>
         </div>
         <div class="tab-pane" id="tab2">
-            <h3 class="block">Provide your profile details</h3>
-            <div class="form-group">
-                <label class="control-label col-md-3">Fullname <span class="required">
-													* </span>
-                </label>
-                <div class="col-md-4">
-                    <input type="text" class="form-control" name="fullname" />
-                    <span class="help-block">
-														Provide your fullname </span>
+            <h3 class="block">fill in the commodity base infomaiton</h3>
+            {% for field in cform %}
+                {% if field.name != "auction" and field.name != "variety" %}
+                <div class="form-group{% if field.errors %} error{% endif %}">
+                    <label class="control-label col-md-3">{{field.label}} <span class="required">
+                                                        * </span>
+                    </label>
+                    <div class="col-md-4">
+                        {{field}}
+                        {% for error in field.errors %}
+                        <span class="help-inline">
+                               {{error}} </span>
+                        {% endfor %}
+                    </div>
+                 {% endif %}
                 </div>
-            </div>
-
+            {% endfor %}
         </div>

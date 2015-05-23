@@ -51,7 +51,7 @@
                         <div class="progress-bar progress-bar-success">
                         </div>
                     </div>
-                    <div class="tab-content">
+                    <div class="tab-content" id="addForm">
                           {% csrf_token %}
                           {% include "auctionweb/commodity/modform.html"%}
                     </div>
@@ -67,6 +67,7 @@
                                 <a href="javascript:;" class="btn green button-submit">
                                  Submit <i class="m-icon-swapright m-icon-white"></i>
                                  </a>
+                                 <input type="submit" class="btn btn-success" value="Submit">
                             </div>
                         </div>
                 </div>
@@ -94,8 +95,39 @@
                     return
                 }
                 var data = data.data;
-                console.log(data.html)
                 $("#addForm").empty().html(data.html)
+                $("#formControl").find("input").addClass("form-control")
+                //$('button-previous').trigger('click');
+            })
+        })
+        function bind_select(element, data){
+            var select_data = [];
+            for (i=0; i<data.length;i++){
+                select_data.push({id: data[i], text: data[i]})
+            }
+            $("#"+element).select2({data: select_data})
+        }
+        $.getJSON("{% url 'get_field_select'%}", function(data){
+            for (i in data.data){
+                bind_select(i, data.data[i])
+            }
+        })
+        $("#id_auction").on("change", function(){
+            var s_auction_val = $(this).val();
+            $.post("{% url 'get_field_select' %}", {data:JSON.stringify({auction:s_auction_val})},function(data){
+                if (!data.success){
+                    alert(data.error_message)
+                }else{
+                    var variety = data.data;
+                    var select_data = []
+                    console.log($("#id_variety"))
+                    for (i in variety){
+                        for (vty in variety[i]){
+                            select_data.push({id:variety[i][vty] , text: variety[i][vty]})
+                        }
+                        $("#"+i).select2({data:select_data});
+                    }
+                }
             })
         })
     </script>
