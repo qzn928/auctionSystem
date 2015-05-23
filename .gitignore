@@ -7,3 +7,5 @@ PGCSite.egg-info
 migrations
 .idea
 *.swp
+auction
+local_settings.*
