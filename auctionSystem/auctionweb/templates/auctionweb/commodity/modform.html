@@ -6,7 +6,7 @@
                     Auction<span class="required">* </span>
                 </label>
                 <div class="col-md-4">
-                    <input type="text" class="form-control" name="auction" id="id_auction"/>
+                    <input type="text" class="form-control" name="auction" id="id_auction" {% if auction %}value="{{auction}}"{% endif%}/>
                     <span class="help-block">
 						choose commodity auction </span>
                 </div>
@@ -16,7 +16,7 @@
                     Variety<span class="required">* </span>
                 </label>
                 <div class="col-md-4">
-                    <input type="text" class="form-control" name="variety" id="id_variety"/>
+                    <input type="text" class="form-control" name="variety" id="id_variety" {% if variety %}value="{{variety}}"{% endif%} />
                     <span class="help-block">
 						choose commodity variety</span>
                 </div>

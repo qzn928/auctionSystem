@@ -65,28 +65,28 @@
 
                     <a href="{% url 'clist'%}">
                     <i class="fa fa-gift"></i>
-					commodity info<span class="selected">
+					Commodity<span class="selected">
 					</span>
 					</a>
 				</li>
 				<li class="classic-menu-dropdown" id="nav-invoice">
 					<a data-toggle="dropdown" href="{% url 'fvlist' %}">
-					invoice <i class="fa fa-angle-down"></i>
+					Invoice <i class="fa fa-angle-down"></i>
 					</a>
 					<ul class="dropdown-menu pull-left">
 						<li>
 							<a href="{% url 'vlist' %}">
-							<i class="fa fa-bookmark-o"></i> preinvoice </a>
+							<i class="fa fa-bookmark-o"></i> pre-invoice </a>
 						</li>
 						<li>
 							<a href="{% url 'fvlist' %}">
-							<i class="fa fa-user"></i> finalinvoice </a>
+							<i class="fa fa-user"></i> final-invoice </a>
 						</li>
 					</ul>
 				</li>
 				<li class="classic-menu-dropdown" id="nav-peelfield">
 					<a data-toggle="dropdown" href="javascript:;">
-					peelfield <i class="fa fa-angle-down"></i>
+					Peelfield <i class="fa fa-angle-down"></i>
 					</a>
 					<ul class="dropdown-menu pull-left">
 						<li>
@@ -95,7 +95,7 @@
 						</li>
 						<li>
 							<a href="{% url 'plist' %}">
-							<i class="fa fa-user"></i> all commodity info </a>
+							<i class="fa fa-user"></i> all commodity </a>
 						</li>
 					</ul>
 				</li>
@@ -170,7 +170,7 @@
 				<ul class="page-breadcrumb">
 					<li>
 						<i class="fa fa-home"></i>
-						<a href="index.html">Home Page</a>
+						<a href="{% url 'clist' %}">Home Page</a>
 						<i class="fa fa-angle-right"></i>
 					</li>
 					<li>

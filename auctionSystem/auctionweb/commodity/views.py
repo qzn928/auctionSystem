@@ -17,7 +17,6 @@ from .forms import CommodityForm
 from auctionweb.shortcuts.ajax import ajax_success, ajax_error
 from auctionweb import mckeys
 
-
 def add(request, template_name):
     cform = CommodityForm()
     if request.method == "POST":
@@ -48,18 +47,28 @@ def change(request, lot_nu, template_name):
             cform.save()
             return redirect("clist")
     cform = CommodityForm(instance=com_obj)
-    C = {"cform": cform, "modify": "true", "lot_nu": lot_nu}
+    C = {
+        "cform": cform, "modify": "true", "lot_nu": lot_nu,
+        "auction": com_obj.auction.name,
+        "variety": com_obj.types
+        }
     return render(request, template_name, C)
 
 def copy_last_form(request, template_name):
     """复制上一个lotform"""
     mem = memcache.Client(settings.MEMCACHES)
     last_form_data = mem.get(mckeys.COPY_LAST_FORM)
-    print last_form_data
-    cform = CommodityForm(last_form_data)
+    copy_form_data = last_form_data.copy()
+    copy_form_data.pop("lot")
+    print copy_form_data
+    cform = CommodityForm(copy_form_data)
     html = render_to_string(
         template_name,
-        {"cform": cform},
+        {
+            "cform": cform, 
+            "auction": copy_form_data.get("auction"),
+            "variety": copy_form_data.get("variety"),
+        },
         context_instance=RequestContext(request)
     )
     print html

@@ -31,6 +31,7 @@
 
     <div class="" id="formControl">
         <form class="form-horizontal" id="submit_form" action="." method="POST">
+            {% csrf_token %}
             <div class="form-wizard">
                 <div class="form-body">
                      <ul class="nav nav-pills nav-justified steps">
@@ -55,7 +56,6 @@
                         <div class="alert alert-danger display-none">
                             You have some form errors. Please check below.
                         </div>
-                        {% csrf_token %}
                           {% include "auctionweb/commodity/modform.html"%}
                     </div>
                 </div>
@@ -101,6 +101,7 @@
                 $("#addForm").empty().html(data.html)
                 $("#formControl").find("input").addClass("form-control")
                 get_select();
+                auction_change();
                 //$('button-previous').trigger('click');
             })
         })
@@ -109,6 +110,8 @@
             for (i=0; i<data.length;i++){
                 select_data.push({id: data[i], text: data[i]})
             }
+            console.log(element)
+            console.log(data)
             $("#"+element).select2({data: select_data})
         }
         function get_select(){
@@ -118,25 +121,29 @@
                 }
             })
         }
-        get_select()
-        $("#id_auction").on("change", function(){
-            var s_auction_val = $(this).val();
-            $.post("{% url 'get_field_select' %}", {data:JSON.stringify({auction:s_auction_val})},function(data){
-                if (!data.success){
-                    alert(data.error_message)
-                }else{
-                    var variety = data.data;
-                    var select_data = []
-                    console.log($("#id_variety"))
-                    for (i in variety){
-                        for (vty in variety[i]){
-                            select_data.push({id:variety[i][vty] , text: variety[i][vty]})
+        function auction_change(){
+            $("#id_auction").on("change", function(){
+                var s_auction_val = $(this).val();
+                $.post("{% url 'get_field_select' %}", {data:JSON.stringify({auction:s_auction_val})},function(data){
+                    if (!data.success){
+                        alert(data.error_message)
+                    }else{
+                        var variety = data.data;
+                        var select_data = []
+                        console.log($("#id_variety"))
+                        for (i in variety){
+                            for (vty in variety[i]){
+                                select_data.push({id:variety[i][vty] , text: variety[i][vty]})
+                            }
+                            $("#"+i).select2({data:select_data});
                         }
-                        $("#"+i).select2({data:select_data});
                     }
-                }
+                })
             })
-        })
+        }
+        // 默认执行两个绑定事件函数
+        get_select();
+        auction_change();
     </script>
 {% endblock %}
 {% block navname%}commodity{% endblock %}
