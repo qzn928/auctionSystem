@@ -91,6 +91,7 @@ def ajax_list_data(request):
 @login_required
 def list(request, template_name):
     commodity_list = Commodity.objects.exclude(is_invoice=1).order_by("lot")
+    print request.user
     return render(request, template_name, {"c_list": commodity_list})
 
 @csrf_exempt
