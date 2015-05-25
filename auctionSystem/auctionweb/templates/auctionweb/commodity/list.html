@@ -4,6 +4,7 @@
 {% block header_js %}
     <style>
         .ceTable{text-align:center}
+        .select-body{margin:10px 0px -13px}
     </style>
 {% endblock%}
 {% block content %}
@@ -19,6 +20,19 @@
         </div>
     </div>
     <div class="portlet-body">
+        <div class="select-body">
+            <label>Choose auction</label>
+            <select name="auction" id="auction" style="margin-bottom:8px;width:200px">
+                {% for auction in auctions %}
+                    {% if forloop.first %}
+                    <option value="{{auction.pk}}" selected>{{auction.name}}</option>
+                    {% else %}
+                    <option value="{{auction.pk}}">{{auction.name}}</option>
+                    {% endif %}
+                {% endfor %}
+            </select>
+        </div>
+        <hr>
         <table class="display" id="lotTable" cellspacing="0" width="100%">
             <thead>
                 <tr>
@@ -87,8 +101,17 @@
                     <div class="form-group">
                         <label class="col-sm-3 control-label">初始汇率</label>
                         <div class="col-sm-9"> 
-                            <input type="text" name="newRate" id="newRate" class="form-control" placeholder="must"/>
+                            <input type="text" name="newRate" id="newRate" class="form-control" value="{{begin_rate}}" placeholder="must"/>
                         </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-3 control-label">佣金比例</label>
+                        <div class="col-sm-9"> 
+                            <input type="text" name="com_rate" id="comRate" class="form-control" value="{{com_rate}}" placeholder="must"/>
+                        </div>
+                    </div>
+                    <div style="margin-left:150px">
+                        <span class="help-inline" style="display:none;color:red" id="warning">初始汇率和佣金比例都不能为空</span>
                     </div>
                 </div>
           </div>
@@ -119,125 +142,142 @@
 {% endblock %}
 {% block footer_js %}
     <script type="text/javascript">
-        var lotTable = $("#lotTable").DataTable({
-            "searching": true,
-            //"info": false,
-           // "paging": false,
-            "sDom": '<"toolsbar"><"H"TfrC>t<"F"ip>',
-            "oTableTools":{
-             //   "sRowSelect": "multi",
-                "aButtons":[
-                    {
-                        "sExtends": "text",
-                        "sButtonText": "create commodity",
-                        "fnClick": function(nButton, oConfig, oFlash){
-                            location.href="{% url 'cadd'%}"
-                        }
-                    },{
-                        "sExtends": "text",
-                        "sButtonText": "create preinvoice",
-                        "fnClick": function(nButton, oConfig, oFlash){
-                            var ott = lotTable.row(".selected")
-                            if(ott.length!=1){
-                                alert("至少选择一列!")
-                            }else{
-                                var ott = lotTable.rows(".selected")
-                                var lot_nu_arr = [];
-                                var customer_id = []
-                                $.each(ott.data(), function(i, n){
-                                    lot_nu_arr.push(n.lot);
-                                    customer_id.push(n.customer_id)
-                                })
-                                if ($.unique(customer_id).length!=1){
-                                    alert("客户编号必须相同才能生成发票")
-                                    return false
-                                }
-                                $("#myModal").modal();
-                                $("#invoiceSumit").on("click", function(){
-                                    var newRate = $("#newRate").val();
-                                    if (!newRate){
-                                        alert("初始汇率不能为空");
+        function drawTable(auction_id){
+            var lotTable = $("#lotTable").DataTable({
+                "searching": true,
+                //"info": false,
+               // "paging": false,
+                "sDom": '<"toolsbar"><"H"TfrC>t<"F"ip>',
+                "oTableTools":{
+                 //   "sRowSelect": "multi",
+                    "aButtons":[
+                        {
+                            "sExtends": "text",
+                            "sButtonText": "create",
+                            "fnClick": function(nButton, oConfig, oFlash){
+                                location.href="/commodity/add/"+auction_id+""
+                            }
+                        },{
+                            "sExtends": "text",
+                            "sButtonText": "create preinvoice",
+                            "fnClick": function(nButton, oConfig, oFlash){
+                                var ott = lotTable.row(".selected")
+                                if(ott.length!=1){
+                                    alert("至少选择一列!")
+                                }else{
+                                    var ott = lotTable.rows(".selected")
+                                    var lot_nu_arr = [];
+                                    var customer_id = []
+                                    $.each(ott.data(), function(i, n){
+                                        lot_nu_arr.push(n.lot);
+                                        customer_id.push(n.customer_id)
+                                    })
+                                    if ($.unique(customer_id).length!=1){
+                                        alert("客户编号必须相同才能生成发票")
                                         return false
                                     }
-                                    var post_data = {"all_lot_nu": lot_nu_arr, "new_rate": newRate, "customer_id":customer_id[0]};
-                                    $.post("{% url 'cinvoice' %}", {data:JSON.stringify(post_data)}, function(data){
-                                        if (!data.success){
-                                            alert(data.error_message)
-                                        }else{
-                                            lotTable.row('.selected').remove().draw(false);
-                                            lotTable.ajax.reload();
-                                            $("#myModal").find("button[data-dismiss]").trigger("click")
+                                    $("#myModal").modal();
+                                    $("#invoiceSumit").on("click", function(){
+                                        var newRate = $("#newRate").val();
+                                        var comRate = $("#comRate").val();
+                                        if (!newRate || !comRate){
+                                            $("#warning").css("display", "block");
+                                            return false
                                         }
+                                        var post_data = {
+                                            "all_lot_nu": lot_nu_arr, 
+                                            "new_rate": newRate, 
+                                            "customer_id":customer_id[0],
+                                            "com_rate": comRate,
+                                           // "csrfmiddlewaretoken": $("{%csrf_token%}").val()
+                                        };
+                                        $.post("{% url 'cinvoice' %}", {data:JSON.stringify(post_data)}, function(data){
+                                            if (!data.success){
+                                                alert(data.error_message)
+                                            }else{
+                                                lotTable.row('.selected').remove().draw(false);
+                                                lotTable.ajax.reload();
+                                                $("#myModal").find("button[data-dismiss]").trigger("click")
+                                            }
+                                        })
                                     })
-                                })
-                            }
-                        }
-                    },{
-                        "sExtends": "text",
-                        "sButtonText": "modify commodity",
-                        "fnClick": function(nButton, oConfig, oFlash){
-                            var ott = lotTable.row(".selected")
-                            if(ott.length!=1){
-                                alert("请选择一列进行修改")
-                            }else{
-                                var lot_nu = ott.data().lot;
-                                location.href="commodity/change/"+lot_nu+""
-                            }
-                        }
-                    },{
-                        "sExtends": "text",
-                        "sButtonText": "delete commodity",
-                        "fnClick": function(nButton, oConfig, oFlash){
-                            var ott = lotTable.row(".selected")
-                            if (ott.length<1){alert("至少选择一条数据删除!")}
-                            else{
-                                var ott = lotTable.rows(".selected")
-                                var lot_nu_arr = [];
-                                $.each(ott.data(), function(i, n){
-                                    lot_nu_arr.push(n.lot);
-                                })
-                            }
-                            $.post("{% url 'cdel' %}", {data:JSON.stringify(lot_nu_arr)}, function(data){
-                                if (data.success){
-                                    lotTable.row('.selected').remove().draw(false);
                                 }
-                            })
+                            }
+                        },{
+                            "sExtends": "text",
+                            "sButtonText": "modify",
+                            "fnClick": function(nButton, oConfig, oFlash){
+                                var ott = lotTable.row(".selected")
+                                if(ott[0].length!=1){
+                                    alert("请选择一列进行修改")
+                                    return 
+                                }else{
+                                    var lot_nu = ott.data().id;
+                                    location.href="commodity/change/"+lot_nu+""
+                                }
+                            }
+                        },{
+                            "sExtends": "text",
+                            "sButtonText": "delete",
+                            "fnClick": function(nButton, oConfig, oFlash){
+                                var ott = lotTable.row(".selected")
+                                if (ott.length<1){alert("至少选择一条数据删除!")}
+                                else{
+                                    var ott = lotTable.rows(".selected")
+                                    var lot_nu_arr = [];
+                                    $.each(ott.data(), function(i, n){
+                                        lot_nu_arr.push(n.lot);
+                                    })
+                                }
+                                $.post("{% url 'cdel' %}", {data:JSON.stringify(lot_nu_arr)}, function(data){
+                                    if (data.success){
+                                        lotTable.row('.selected').remove().draw(false);
+                                    }
+                                })
+                            }
                         }
-                    }
+                    ]
+                },
+                "ajaxSource":"/commodity/ajaxlist/"+auction_id+"",
+                "columns":[
+                    {"data": null, "className": "ceTable", "fnCreatedCell":function(nTd, sData, oData, iRow, iCol){
+                        element = $(nTd).empty();
+                        element.append("<input type='checkbox' name='checkList' />");
+                    }},
+                    {"data": "types"},
+                    {"data": "sex"},
+                    {"data": "lot"},
+                    {"data": "customer_id"},
+                    {"data": "size"},
+                    {"data": "level"},
+                    {"data": "color"},
+                    {"data": "definition"},
+                    {"data": "number"},
+                    {"data": "final_price"},
+                    {"data": "evaluation"},
+                    {"data": "remarks", "fnCreatedCell": function(nTd, sData, oData, iRow, iCol){
+                        element = $(nTd).empty();
+                        lookBtn = $("<input type='button' class='btn btn-sm btn-success' value='查看'/>").on("click", function(){
+                            var comment = oData["remarks"];
+                            $("#commentModal .comment").text(comment)
+                            $("#commentModal").modal();
+                        })
+                        element.append(lookBtn)
+                    }},
                 ]
-            },
-            "ajaxSource":"{% url 'ajax_list' %}",
-            "columns":[
-                {"data": null, "className": "ceTable", "fnCreatedCell":function(nTd, sData, oData, iRow, iCol){
-                    element = $(nTd).empty();
-                    element.append("<input type='checkbox' name='checkList' />");
-                }},
-                {"data": "types"},
-                {"data": "sex"},
-                {"data": "lot"},
-                {"data": "customer_id"},
-                {"data": "size"},
-                {"data": "level"},
-                {"data": "color"},
-                {"data": "definition"},
-                {"data": "number"},
-                {"data": "final_price"},
-                {"data": "evaluation"},
-                {"data": "remarks", "fnCreatedCell": function(nTd, sData, oData, iRow, iCol){
-                    element = $(nTd).empty();
-                    lookBtn = $("<input type='button' class='btn btn-sm btn-success' value='查看'/>").on("click", function(){
-                        var comment = oData["remarks"];
-                        $("#commentModal .comment").text(comment)
-                        $("#commentModal").modal();
-                    })
-                    element.append(lookBtn)
-                }},
-            ]
-        })
+            })
+        }
         // 根据checkbox 选中列
-        $("#lotTable tbody").on('click','tr input[name="checkList"]',function(){
+        $("#lotTable").on('click','tr input[name="checkList"]',function(){
             var $tr =$(this).parents('tr');
             $tr.toggleClass('selected');
+        })
+        // 绑定select2到aution,初始化datatable.
+        drawTable($("#auction").val())
+        $("#auction").select2();
+        $("#auction").on("change", function(){
+            $("#lotTable").DataTable().destroy()
+            drawTable($("#auction").val())
         })
     </script>
 {% endblock %}

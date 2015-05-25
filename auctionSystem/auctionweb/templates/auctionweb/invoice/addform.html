@@ -1,5 +1,20 @@
 
 {% for field in form %}
+        {% if field.name == "invoice_nu" or field.name == "customer_id" %}
+        <div class="form-group {% if field.errors %} error{% endif %}">
+            <label class="col-sm-3 control-label">{{field.label}}</label>
+            <div class="col-sm-5 controls">
+              <input type="text" name="{{field.name}}" id="id_{{field.name}}"  value="{{field.value}}" readonly/>
+              {% if field.errors%}
+                {% for error in field.errors%}
+                  <span class="help-inline">{{error}}<span>
+                {% endfor %}
+              {% else %}
+                  <span class="help-inline">{{field.help_text|safe}}<span>
+              {% endif %}
+            </div>
+        </div>
+        {% else %}
         <div class="form-group {% if field.errors %} error{% endif %}">
             <label class="col-sm-3 control-label">{{field.label}}</label>
             <div class="col-sm-5 controls">
@@ -13,4 +28,5 @@
               {% endif %}
             </div>
         </div>
+        {% endif %}
 {% endfor %}

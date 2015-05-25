@@ -17,61 +17,77 @@ from .forms import CommodityForm
 from auctionweb.shortcuts.ajax import ajax_success, ajax_error
 from auctionweb import mckeys
 
-def add(request, template_name):
+def add(request, auction_id, template_name):
     cform = CommodityForm()
+    request.session["auction_id"] = auction_id
+    try:
+        auc_obj = AuctionField.objects.get(pk=auction_id)
+    except AuctionField.DoesNotExist:
+        raise Http404
+    auc_varietys = auc_obj.variety_set.all()
     if request.method == "POST":
         mem = memcache.Client(settings.MEMCACHES)
         cform = CommodityForm(request.POST)
         if cform.is_valid():
-            try:
-                auction_obj = AuctionField.objects.get(name=request.POST.get('auction'))
-            except AuctionField.DoesNotExist:
-                return Http404
             c_obj = cform.save(commit=False)
-            c_obj.auction = auction_obj
+            c_obj.auction = auc_obj
             c_obj.save()
             mem.set("last_form", request.POST)
-            return redirect("clist")
-        print cform.errors
-    C = {"cform": cform}   
+            return ajax_success({"success": True})
+        else:
+            html = render_to_string(
+                "auctionweb/commodity/modform.html",
+                {"cform": cform}, 
+                context_instance=RequestContext(request)
+            )
+            return ajax_success({"html": html})
+    C = {"cform": cform, "auc_varietys": auc_varietys}   
     return render(request, template_name, C)
 
 def change(request, lot_nu, template_name):
     try:
-        com_obj = Commodity.objects.get(lot=lot_nu)
-    except com_obj.DoesNotExist:
-        return HttpResponse("does't exist")
+        com_obj = Commodity.objects.get(pk=lot_nu)
+    except Commodity.DoesNotExist:
+        raise Http404
     if request.method == "POST":
+        print "22222222"
         cform = CommodityForm(request.POST, instance=com_obj)
         if cform.is_valid():
             cform.save()
-            return redirect("clist")
+            return ajax_success({"modify": True})
+        else:
+            print cform.errors
+    auc_varietys = com_obj.auction.variety_set.all()
     cform = CommodityForm(instance=com_obj)
     C = {
-        "cform": cform, "modify": "true", "lot_nu": lot_nu,
-        "auction": com_obj.auction.name,
-        "variety": com_obj.types
-        }
+        "cform": cform, 
+        "variety": com_obj.types,
+        "auc_varietys": auc_varietys
+    }
     return render(request, template_name, C)
 
 def copy_last_form(request, template_name):
     """复制上一个lotform"""
+    auction_id = request.session.get("auction_id")
+    try:
+        auc_obj = AuctionField.objects.get(pk=auction_id)
+        varietys = auc_obj.variety_set.all()
+    except AuctionField.DoesNotExist:
+        raise Http404
+    print varietys
     mem = memcache.Client(settings.MEMCACHES)
     last_form_data = mem.get(mckeys.COPY_LAST_FORM)
     copy_form_data = last_form_data.copy()
     copy_form_data.pop("lot")
-    print copy_form_data
     cform = CommodityForm(copy_form_data)
     html = render_to_string(
         template_name,
         {
             "cform": cform, 
-            "auction": copy_form_data.get("auction"),
-            "variety": copy_form_data.get("variety"),
+            "auc_varietys": varietys
         },
         context_instance=RequestContext(request)
     )
-    print html
     return ajax_success(html=html)
 
 @csrf_exempt
@@ -83,16 +99,23 @@ def delete(request):
     del_list.delete()
     return ajax_success()
 
-def ajax_list_data(request):
-    commodity_list = Commodity.objects.exclude(is_invoice=1).order_by("lot")
+def ajax_list_data(request, auction_id):
+    commodity_list = Commodity.objects.filter(auction__id=auction_id).exclude(is_invoice=1).order_by("lot")
     back_list = [i.toDICT() for i in commodity_list]
     return ajax_success(back_list)
 
 @login_required
 def list(request, template_name):
-    commodity_list = Commodity.objects.exclude(is_invoice=1).order_by("lot")
-    print request.user
-    return render(request, template_name, {"c_list": commodity_list})
+    mem = memcache.Client(settings.MEMCACHES)
+    begin_rate = mem.get("begin_rate")
+    com_rate = mem.get("commpression_rate")
+    auction_list = AuctionField.objects.all().order_by("id")
+    C = {
+        "begin_rate": begin_rate,
+        "com_rate": com_rate,
+        "auctions": auction_list
+    }
+    return render(request, template_name, C)
 
 @csrf_exempt
 def get_select(request):

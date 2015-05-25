@@ -25,52 +25,21 @@
             <a href="javascript:;" id="copyForm" class="btn btn-default btn-sm">
                 <i class="fa fa-copy"></i>copy form</a>
         </div>
-
     </div>
     <div class="portlet-body  form">
-
     <div class="" id="formControl">
         <form class="form-horizontal" id="submit_form" action="." method="POST">
             {% csrf_token %}
             <div class="form-wizard">
                 <div class="form-body">
-                     <ul class="nav nav-pills nav-justified steps">
-                        <li>
-                            <a href="#tab1" data-toggle="tab" class="step">
-                                <span class="number">1 </span>
-                                <span class="desc"><i class="fa fa-check"></i> Account Setup </span>
-                            </a>
-                        </li>
-                        <li>
-                            <a href="#tab2" data-toggle="tab" class="step">
-                                <span class="number">2 </span>
-                                <span class="desc"><i class="fa fa-check"></i> Profile Setup </span>
-                            </a>
-                        </li>
-                    </ul>
-                    <div id="bar" class="progress progress-striped" role="progressbar">
-                        <div class="progress-bar progress-bar-success">
-                        </div>
-                    </div>
-                    <div class="tab-content" id="addForm">
-                        <div class="alert alert-danger display-none">
-                            You have some form errors. Please check below.
-                        </div>
-                          {% include "auctionweb/commodity/modform.html"%}
+                    <div id="addForm">
+                      {% include "auctionweb/commodity/modform.html"%}
                     </div>
                 </div>
                 <div class="form-actions">
                         <div class="row">
-                            <div class="col-md-offset-3 col-md-9">
-                                <a href="javascript:;" class="btn default button-previous">
-                                    <i class="m-icon-swapleft"></i> Back </a>
-                                <a href="javascript:;" class="btn blue button-next">
-                                 Continue <i class="m-icon-swapright m-icon-white"></i>
-                                   </a>
-                                <a href="javascript:;" class="btn green button-submit">
-                                 Submit <i class="m-icon-swapright m-icon-white"></i>
-                                 </a>
-                                 </div>
+                            <div class="col-md-offset-4 col-md-8">
+                                <input type="submit" class="btn btn-success" value="保存" style="width:150px"/>
                             </div>
                         </div>
                 </div>
@@ -89,7 +58,7 @@
 <!-- END PAGE LEVEL PLUGINS -->
    <script src="/static/assets/admin/pages/scripts/form-wizard.js" type="text/javascript"></script>
     <script>
-        $("#formControl").find("input").addClass("form-control")
+        $("#addForm").find("input").addClass("form-control")
         //复制表单
         $("#copyForm").on("click", function(){
             $.getJSON("{% url 'aform' %}", function(data){
@@ -101,17 +70,16 @@
                 $("#addForm").empty().html(data.html)
                 $("#formControl").find("input").addClass("form-control")
                 get_select();
-                auction_change();
+                $("#id_types").select2()
                 //$('button-previous').trigger('click');
             })
         })
+        $("#id_types").select2()
         function bind_select(element, data){
             var select_data = [];
             for (i=0; i<data.length;i++){
                 select_data.push({id: data[i], text: data[i]})
             }
-            console.log(element)
-            console.log(data)
             $("#"+element).select2({data: select_data})
         }
         function get_select(){
@@ -121,29 +89,24 @@
                 }
             })
         }
-        function auction_change(){
-            $("#id_auction").on("change", function(){
-                var s_auction_val = $(this).val();
-                $.post("{% url 'get_field_select' %}", {data:JSON.stringify({auction:s_auction_val})},function(data){
-                    if (!data.success){
-                        alert(data.error_message)
-                    }else{
-                        var variety = data.data;
-                        var select_data = []
-                        console.log($("#id_variety"))
-                        for (i in variety){
-                            for (vty in variety[i]){
-                                select_data.push({id:variety[i][vty] , text: variety[i][vty]})
-                            }
-                            $("#"+i).select2({data:select_data});
-                        }
-                    }
-                })
-            })
-        }
         // 默认执行两个绑定事件函数
         get_select();
-        auction_change();
+        // ajax 提交commodity 基本信息
+        $("#submit_form").ajaxForm({
+            success: function(data){
+                console.log(data)
+                var data = data.data;
+                if (data.modify){
+                    location.href="{% url 'clist' %}"
+                    return 
+                }
+                if (data.success){
+                    alert("添加成功")
+                }else{
+                    $("#addForm").empty().html(data.html)
+                }
+            }
+        })
     </script>
 {% endblock %}
 {% block navname%}commodity{% endblock %}

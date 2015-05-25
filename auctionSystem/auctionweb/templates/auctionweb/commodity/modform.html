@@ -1,32 +1,24 @@
-
-        <div class="tab-pane active" id="tab1">
-            <h3 class="block">choose auction and variety</h3>
-            <div class="form-group">
-                <label class="control-label col-md-3">
-                    Auction<span class="required">* </span>
-                </label>
-                <div class="col-md-4">
-                    <input type="text" class="form-control" name="auction" id="id_auction" {% if auction %}value="{{auction}}"{% endif%}/>
-                    <span class="help-block">
-						choose commodity auction </span>
-                </div>
-            </div>
-            <div class="form-group">
-                <label class="control-label col-md-3">
-                    Variety<span class="required">* </span>
-                </label>
-                <div class="col-md-4">
-                    <input type="text" class="form-control" name="variety" id="id_variety" {% if variety %}value="{{variety}}"{% endif%} />
-                    <span class="help-block">
-						choose commodity variety</span>
-                </div>
-            </div>
-        </div>
         <div class="tab-pane" id="tab2">
-            <h3 class="block">fill in the commodity base infomaiton</h3>
             {% for field in cform %}
-                {% if field.name != "auction" and field.name != "variety" %}
-                <div class="form-group{% if field.errors %} error{% endif %}">
+                 {% if field.name == "types" %}
+                 <div class="form-group{% if field.errors %} error{% endif %}">
+                    <label class="control-label col-md-3">{{field.label}} <span class="required">
+                                                        * </span>
+                    </label>
+                    <div class="col-md-4">
+                        <select id="id_types" name="types" style="width:409px">
+                            {% for v in auc_varietys %}
+                                {% if variety and variety == v.name %}
+                                    <span><option selected>{{v.name}}</option></span>
+                                {% else %}
+                                    <span><option>{{v.name}}</option></span>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
+                    </div>
+                 </div>
+                 {% else %}
+                 <div class="form-group{% if field.errors %} error{% endif %}">
                     <label class="control-label col-md-3">{{field.label}} <span class="required">
                                                         * </span>
                     </label>
@@ -37,7 +29,7 @@
                                {{error}} </span>
                         {% endfor %}
                     </div>
+                 </div>
                  {% endif %}
-                </div>
             {% endfor %}
         </div>

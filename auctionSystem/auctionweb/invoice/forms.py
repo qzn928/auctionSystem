@@ -28,10 +28,6 @@ class FinalInvoiceForm(forms.ModelForm):
         fields = (
             "invoice_nu",
             "customer_id",
-            "goods_type",
-            "goods_nu",
-            "dollar_sum",
-            "cost_sum",
             "auction_invoice",
             "final_exchange_rate"
         )

@@ -49,13 +49,13 @@ def fvlist(request, template_name):
     '''
     return render(request, template_name)
 
-    
-@csrf_exempt
+@csrf_exempt    
 def voadd(request, template_name):
     if request.method == "POST":
         post_data = json.loads(request.POST.get("data", ''))
         all_lot_nu = post_data.get("all_lot_nu")
         new_rate = post_data.get("new_rate")
+        com_rate = post_data.get("com_rate")
         comm_list = Commodity.objects.filter(lot__in=all_lot_nu)
         invoice_nu = Invoice.get_last_nu()
         form_data = {
@@ -66,14 +66,17 @@ def voadd(request, template_name):
             "goods_type": "ccc",
             "goods_nu": 100,
             "dollar_sum": 3000,
-            "cost_sum": 2000
+            "cost_sum": 2000,
+            "commission_rate": com_rate
         }
         iform = InvoiceForm(form_data)
         if iform.is_valid():
             iform.save()
             comm_list.update(is_invoice=1)
+            mem = memcache.Client(settings.MEMCACHES)
+            mem.set_multi({"begin_rate": new_rate, "commpression_rate": com_rate})
             return ajax_success()
-    return ajax_error()
+    return ajax_error("检查数据格式")
 
 def vlist_of_json(request):
     all_pre_invoice = Invoice.objects.filter(is_pre=1).order_by("invoice_nu")

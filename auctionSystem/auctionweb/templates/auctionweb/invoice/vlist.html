@@ -3,18 +3,18 @@
 
 {% block header_js %}
 <style>
-    .ceTable{text-align:center}
-       .form-group input{
-                 background-color: #fff;
-                  height: 34px;
-                  padding:6px 12px;
-                  line-height:1.42857413;
-                   border: 1px solid #e5e5e5;
-                    box-shadow: none;
-                     transition: border-color ease-in-out .15s, box-shadow ease-in-out .15s;
-                      border-color: #F1F3F8;
-                       width: 100%;
-                    }
+   .ceTable{text-align:center}
+   .form-group input{
+     background-color: #fff;
+     height: 34px;
+     padding:6px 12px;
+     line-height:1.42857413;
+     border: 1px solid #e5e5e5;
+     box-shadow: none;
+     transition: border-color ease-in-out .15s, box-shadow ease-in-out .15s;
+     border-color: #F1F3F8;
+     width: 100%;
+    }
 </style>
 {% endblock%}
 {% block content %}
@@ -33,7 +33,7 @@
 <table class="display" id="preTable" cellspacing="0" width="100%">
     <thead>
         <tr>
-            <th><span>发票号</span></th>
+            <th><span>初始发票号</span></th>
             <th><span>客户号</span></th>
             <th><span>修改次数+时间</span></th>
             <th><span>品种</span></th>
@@ -132,8 +132,6 @@
                                     if (!data.success){
                                         alert(data.errors)
                                     }else{
-                                        console.log("ok")
-                                       // lotTable.row('.selected').remove().draw(false);
                                        $("#lotModal").find("button[data-miss=modal]").trigger("click")
                                     }
                                 })
@@ -143,10 +141,6 @@
                   },
                   "ajaxSource":"{% url 'inlot' %}?invoice_id="+invoice_id+"",
                   "columns":[
-                 /*       {"data": null, "className": "ceTable", "fnCreatedCell":function(nTd, sData, oData, iRow, iCol){
-                            element = $(nTd).empty();
-                            element.append("<input type='checkbox' name='checkList' />");
-                        }},*/
                         {"data": "types"},
                         {"data": "sex"},
                         {"data": "lot"},
@@ -162,7 +156,7 @@
            // "paging": false,
             "sDom": '<"toolsbar"><"H"TfrC>t<"F"ip>',
             "oTableTools":{
-                "sRowSelect": "single",
+                "sRowSelect": "multi",
                 "aButtons":[
                     {
                         "sExtends": "text",

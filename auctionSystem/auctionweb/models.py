@@ -83,7 +83,7 @@ class Commodity(models.Model):
     # 备注
     remarks = models.CharField(max_length=100) 
     # 发票生成标志
-    is_invoice = models.IntegerField() 
+    is_invoice = models.IntegerField(default=0) 
     # 削皮场
     peel_field = models.ForeignKey(PeelField, null=True) 
     # 削皮指示
