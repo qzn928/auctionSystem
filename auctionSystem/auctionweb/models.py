@@ -56,6 +56,17 @@ class PeelField(models.Model):
     def __str__(self):
         return self.name
 
+class PeelInform(models.Model):
+    '''削皮指示'''
+    # 名称
+    name = models.CharField(max_length=100) 
+    # 削皮场
+    peel_field = models.ManyToManyField(PeelField)
+    # 价格
+    peel_price = models.FloatField()
+    def __str__(self):
+        return self.name
+
 class Commodity(models.Model):
     """商品"""
     # 商品lot号
@@ -87,7 +98,7 @@ class Commodity(models.Model):
     # 削皮场
     peel_field = models.ForeignKey(PeelField, null=True) 
     # 削皮指示
-    peel_inform = models.CharField(max_length=100) 
+    peel_inform = models.ForeignKey(PeelInform, null=True) 
     # 拍卖场
     auction = models.ForeignKey(AuctionField)
     def __str__(self):

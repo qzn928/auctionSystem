@@ -11,13 +11,19 @@ from django.conf import settings
 from django.template import RequestContext
 from django.views.decorators.csrf import csrf_exempt
 
-from auctionweb.models import Customer, PeelField, Commodity, Invoice
+from auctionweb.models import *
 from .forms import PeelFieldForm
 from auctionweb.shortcuts.ajax import ajax_success, ajax_error
 
 
 def peel_list(request, template_name):
-    return render(request, template_name)
+    peel_list = PeelField.objects.all()
+    peel_inform_list = PeelInform.objects.all()
+    C = {
+        "peel_list": peel_list,
+        "peel_inform_list": peel_inform_list
+    }
+    return render(request, template_name, C)
 
 def com_list_by_peelname(request, template_name):
     all_peelfield_obj = PeelField.objects.all()
@@ -32,21 +38,16 @@ def get_classify_data(request):
         back_data[peel.id] = [i.toDICT() for i in commodity_list]
     return ajax_success(back_data)
 
-def get_com_data(request):
-    commodity_list = Commodity.objects.order_by("lot")
-    back_list = [i.toDICT() for i in commodity_list]
+def get_invoice_data(request):
+    '''pre dressing 页面datatables 发票列表信息'''
+    invoice_list = Invoice.objects.exclude(is_pre=1)
+    back_list = [i.toDICT() for i in invoice_list]
     return ajax_success(back_list)
 
-def add_peel_field(request, template_name):
-    if request.method == "POST":
-        lot_nu = request.POST.get("lot_nu")
-        try:
-            c_obj = Commodity.objects.get(lot=lot_nu)
-            peel_field = PeelField.objects.get(name=request.POST.get("peelfield"))
-        except Commodity.DoesNotExist:
-            return ajax_error("Commodity or peelfield is not exist")
-        c_obj.peel_field = peel_field
-        c_obj.save()
-        return ajax_success()
-    all_peel_name = [peel.name for peel in PeelField.objects.all()]
-    return ajax_success(all_peel_name)
+def add_peel_field(request):
+    if request.method != "POST":
+        raise Http404
+    com_list = json.loads(request.POST.get("com_list"))
+    peel_field = request.POST.get("peel_field")
+    peel_inform = request.POST.get("peel_inform")
+    return ajax_success()

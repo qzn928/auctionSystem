@@ -1,6 +1,5 @@
 
 {% extends "auctionweb/layout.html" %}
-
 {% block header_js %}
     <style>
         .ceTable{text-align:center}
@@ -221,8 +220,10 @@
                             "sButtonText": "delete",
                             "fnClick": function(nButton, oConfig, oFlash){
                                 var ott = lotTable.row(".selected")
-                                if (ott.length<1){alert("至少选择一条数据删除!")}
-                                else{
+                                if (ott.length<1){
+                                    alert("至少选择一条数据删除!")
+                                    return 
+                                }else{
                                     var ott = lotTable.rows(".selected")
                                     var lot_nu_arr = [];
                                     $.each(ott.data(), function(i, n){

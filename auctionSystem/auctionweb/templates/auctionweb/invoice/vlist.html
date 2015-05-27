@@ -35,7 +35,6 @@
         <tr>
             <th><span>初始发票号</span></th>
             <th><span>客户号</span></th>
-            <th><span>修改次数+时间</span></th>
             <th><span>品种</span></th>
             <th><span>数量</span></th>
             <th><span>美金总额</span></th>
@@ -139,7 +138,7 @@
                         }
                       ]
                   },
-                  "ajaxSource":"{% url 'inlot' %}?invoice_id="+invoice_id+"",
+                  "ajaxSource":"/invoice/inlot/"+invoice_id+"/",
                   "columns":[
                         {"data": "types"},
                         {"data": "sex"},
@@ -191,15 +190,21 @@
                         "fnClick": function(nButton, oConfig, oFlash){
                             var ott = TableTools.fnGetInstance("preTable");
                             var selectAtrs = ott.fnGetSelectedData();
-                            if (selectAtrs.length!=1){
-                                alert("请选择一行进行生成")
+                            if (selectAtrs.length<1){
+                                alert("请选择至少一条进行生成")
                                 return false
                             }
-                            if (!selectAtrs[0].auction_invoice || !selectAtrs[0].final_exchange_rate){
-                                alert("发票号和汇率都不能为空")
-                                return false
+                            var invoice_id_list = [];
+                            for (i in selectAtrs){
+                                if (!selectAtrs[i].auction_invoice || !selectAtrs[i].final_exchange_rate){
+                                    alert("存在拍卖会发票和最终汇率为空的选项");
+                                    return false;
+                                }else{
+                                    invoice_id_list.push(selectAtrs[i].id)
+                                }
                             }
-                            $.getJSON("/invoice/cfinvoice/"+selectAtrs[0].id+"", function(data){
+                            $.post("{% url 'create_final_invoice' %}", 
+                                {data: JSON.stringify(invoice_id_list), "csrfmiddlewaretoken": $("{%csrf_token%}").val()}, function(data){
                                 if (data.success){
                                     preTable.ajax.reload();
                                     alert("最终发票成功生成");
@@ -231,14 +236,6 @@
             "columns":[
                 {"data": "invoice_nu"},
                 {"data": "customer_id"},
-                {"data": "modify_date", "fnCreatedCell":function(nTd, sData, oData, iRow, iCol){
-                    element = $(nTd).empty();
-                    var modify_date = oData["modify_date"];
-                    var modify_times = oData["modify_times"];
-                    if (modify_date && modify_times){
-                        element.append("<span>"+modify_times+"+"+modify_date+"</span>")
-                    }
-                }},
                 {"data": "goods_type"},
                 {"data": "goods_nu"},
                 {"data": "dollar_sum"},

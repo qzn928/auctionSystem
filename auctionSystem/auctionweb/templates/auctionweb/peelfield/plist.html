@@ -19,24 +19,14 @@
         </div>
     </div>
     <div class="portlet-body">
-<table class="display" id="lotTable" cellspacing="0" width="100%">
+<table class="display" id="dressInvoice" cellspacing="0" width="100%">
     <thead>
         <tr>
+            <th><span>Invoice No</span></th>
+            <th><span>Customer No</span></th>
             <th><span>品种</span></th>
-            <th><span>性别</span></th>
-            <th><span>LOT号</span></th>
-            <th><span>客户编号</span></th>
-            <th><span>尺码</span></th>
-            <th><span>等级</span></th>
-            <th><span>颜色</span></th>
-            <th><span>清晰度</span></th>
             <th><span>数量</span></th>
-            <th><span>敲锤价</span></th>
-            <th><span>评估</span></th>
-            <th><span>削皮场</span></th>
-            <th><span>削皮指示</span></th>
-            <th><span>备注</span></th>
-         <!--   <th><span>操作</span></th>-->
+            <th><span>状态</span></th>
         </tr>
     </thead>
 </table>
@@ -55,42 +45,113 @@
         <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
         <h4 class="modal-title" id="myModalLabel">添加削皮场</h4>
       </div>
-        <form class="form-horizontal" role="form" action="{% url 'padd' %}" id="paddForm"> 
-          <div class="modal-body">
-                <div class="form-body" style="padding-bottom:0px;margin-left:20px" id="paddFormContent">
-                    <label>选择削皮场</label>
-                    <select id="peelSelect" name="peelfield" style="width:100px;margin-left:20px">
-                    </select>
-                </div>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-            <button type="submit" class="btn btn-primary" id="invoiceSumit">Save and create invoice</button>
-          </div>
-        </form>
-    </div>
-  </div>
-</div>
-<div class="modal fade" id="commentModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        <h4 class="modal-title" id="myModalLabel">备注信息</h4>
+      <div>
+         <form class="form-inline" id="submit_form" action="{% url 'add_peel_field' %}" method="POST" style="margin-top:10px;display:none">
+            <div class="form-group">
+                <label for="peel_field">削皮场</label>
+                <select name="peel_field" id="peel_field" class="form-contorl">
+                {% for peel in peel_list %}
+                    <option value="{{ peel.pk }}">{{ peel.name }}</option>
+                {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="peel_inform">削皮指示</label>
+                <select name="peel_inform" id="peel_inform" class="form-contorl">
+                {% for peel_inform in peel_inform_list %}
+                    <option value="{{ peel_inform.pk }}">{{ peel_inform.name }}</option>
+                {% endfor %}
+                </select>
+            </div>
+            <input type="submit" value="保存" class="btn btn-success" />
+            <input type="button" value="取消" class="btn btn-default" id="cancel"/>
+         <hr>
+         </form>
       </div>
-      <div class="modal-body">
-        <span class="comment"></span>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-      </div>
+      <table style="margin-bottom:20px" class="display" id="lotTable" cellspacing="0" width="100%">
+        <thead>
+          <tr>
+            <th style="width:20px;text-align:center"><span>选择</span></th>
+            <th><span>品种</span></th>
+            <th><span>性别</span></th>
+            <th><span>LOT号</span></th>
+            <th><span>尺码</span></th>
+            <th><span>等级</span></th>
+            <th><span>颜色</span></th>
+            <th><span>清晰度</span></th>
+            <th><span>数量</span></th>
+            <th><span>评估</span></th>
+          </tr>
+        </thead>
+      </table>
     </div>
   </div>
 </div>
 {% endblock %}
 {% block footer_js %}
     <script type="text/javascript">
-        var lotTable = $("#lotTable").DataTable({
+        // 削皮场及削皮指示绑定select2
+        $("#peel_field").select2({"width": '150px'});
+        $("#peel_inform").select2({"width": '150px'});
+        function drawTable(invoice_id){
+            var lotTable = $("#lotTable").DataTable({
+                "searching": false,
+                "paging": false,
+                "info": false,
+                "sDom": '<"toolsbar"><"H"TfrC>t<"F"ip>',
+                "oTableTools":{
+                    "aButtons":[
+                        {
+                            "sExtends": "text",
+                            "sButtonText": "add peelfield",
+                            "fnClick": function(nButton, oConfig, oFlash){
+                                var ott = lotTable.row(".selected")
+                                if (ott.length<1){
+                                    alert("至少选择一条数据删除!")
+                                    return 
+                                }
+                                var ott = lotTable.rows(".selected")
+                                var lot_nu_arr = [];
+                                $.each(ott.data(), function(i, n){
+                                    lot_nu_arr.push(n.id);
+                                })
+                                console.log(lot_nu_arr)
+                                $("#submit_form").css("display", "block")
+                                $("#cancel").on("click", function(){
+                                    $("#submit_form").css("display", "none")
+                                });
+                                $("#submit_form").ajaxForm({
+                                    data: {
+                                        "com_list": JSON.stringify(lot_nu_arr), 
+                                        "csrfmiddlewaretoken": $("{%csrf_token%}").val()
+                                    },
+                                    success: function(data){
+                                        console.log(data)
+                                    }
+                                })
+                            }
+                        }
+                    ]
+                },
+                "ajaxSource":"/invoice/inlot/"+invoice_id+"",
+                "columns":[
+                    {"data": null, "className": "ceTable", "fnCreatedCell":function(nTd, sData, oData, iRow, iCol){
+                        element = $(nTd).empty();
+                        element.append("<input type='checkbox' name='checkList' />");
+                    }}, 
+                    {"data": "types"},
+                    {"data": "sex"},
+                    {"data": "lot"},
+                    {"data": "size"},
+                    {"data": "level"},
+                    {"data": "color"},
+                    {"data": "definition"},
+                    {"data": "number"},
+                    {"data": "evaluation"},
+                ]
+            })
+        }
+        var dressInvoice = $("#dressInvoice").DataTable({
             "searching": true,
             //"info": false,
            // "paging": false,
@@ -100,69 +161,36 @@
                 "aButtons":[
                     {
                         "sExtends": "text",
-                        "sButtonText": "add peelfield",
-                      "fnClick": function(nButton, oConfig, oFlash){
-                            var ott = TableTools.fnGetInstance("lotTable");
+                        "sButtonText": "view",
+                        "fnClick": function(nButton, oConfig, oFlash){
+                            var ott = TableTools.fnGetInstance("dressInvoice");
                             var selectAtrs = ott.fnGetSelectedData();
                             if(selectAtrs.length!=1){
                                 alert("选择一行进行操作")
                                 return false
-                            }
-                            $.getJSON("{% url 'padd' %}", function(data){
-                              //  $("#paddFormContent").empty().html(data.data.html)
-                              for (i in data.data){
-                               // sdata.push({id: i, text: data.data[i]})
-                               if (i==0){
-                                   $("#peelSelect").append("<option selected>"+data.data[i]+"</option>")
-                               }else{
-                                   $("#peelSelect").append("<option>"+data.data[i]+"</option>")
-                               }
-                              }
-                              $("#peelSelect").select2()
-                            })
+                            };
+                            $("#submit_form").css("display", "none")
                             $("#paddModal").modal();
-                            $("#paddForm").ajaxForm({
-                                type: "post",
-                                data: {"lot_nu": selectAtrs[0].lot, "csrfmiddlewaretoken": $("{%csrf_token%}").val()},
-                                success: function(data){
-                                    if (data.success){
-                                        $("#paddModal").find("button[data-dismiss]").trigger("click")
-                                        lotTable.ajax.reload();
-                                    }else{
-                                        alert(data.error_messages)
-                                    }
-                                }
-                            })
+                            $("#lotTable").DataTable().destroy()
+                            drawTable(selectAtrs[0].id);
                         }
                     }
                 ]
             },
-            "ajaxSource":"{% url 'pdata' %}",
+            "ajaxSource":"{% url 'pre_dress' %}",
             "columns":[
-                {"data": "types"},
-                {"data": "sex"},
-                {"data": "lot"},
+                {"data": "invoice_nu"},
                 {"data": "customer_id"},
-                {"data": "size"},
-                {"data": "level"},
-                {"data": "color"},
-                {"data": "definition"},
-                {"data": "number"},
-                {"data": "final_price"},
-                {"data": "evaluation"},
-                {"data": "peel_field"},
-                {"data": "peel_inform"},
-                {"data": "remarks", "fnCreatedCell": function(nTd, sData, oData, iRow, iCol){
-                    element = $(nTd).empty();
-                    lookBtn = $("<input type='button' class='btn btn-sm btn-success' value='查看'/>").on("click", function(){
-                        var comment = oData["remarks"];
-                        $("#commentModal .comment").text(comment)
-                        $("#commentModal").modal();
-                    })
-                    element.append(lookBtn)
-                }},
+                {"data": "goods_type"},
+                {"data": "goods_nu"},
+                {"data": null},
             ]
         })
+        // 根据checkbox 选中列
+        $("#lotTable").on('click','tr input[name="checkList"]',function(){
+            var $tr =$(this).parents('tr');
+            $tr.toggleClass('selected');
+        }) 
     </script>
 {% endblock %}
 {% block navname %}peelfield{% endblock%}

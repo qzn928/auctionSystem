@@ -111,10 +111,11 @@ def list(request, template_name):
     com_rate = mem.get("commpression_rate")
     auction_list = AuctionField.objects.all().order_by("id")
     C = {
-        "begin_rate": begin_rate,
-        "com_rate": com_rate,
+        "begin_rate": begin_rate if begin_rate else '',
+        "com_rate": com_rate if com_rate else '',
         "auctions": auction_list
     }
+    print template_name
     return render(request, template_name, C)
 
 @csrf_exempt

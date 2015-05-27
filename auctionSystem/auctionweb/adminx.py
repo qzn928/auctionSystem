@@ -38,3 +38,7 @@ class VarietyAdmin(object):
     
 xadmin.site.register(Variety, VarietyAdmin)
 
+class PeelInformAdmin(object):
+    pass
+    
+xadmin.site.register(PeelInform, PeelInformAdmin)
