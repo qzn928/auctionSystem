@@ -37,7 +37,7 @@ def add(request, auction_id, template_name):
         else:
             html = render_to_string(
                 "auctionweb/commodity/modform.html",
-                {"cform": cform}, 
+                {"cform": cform, "auc_varietys": auc_varietys}, 
                 context_instance=RequestContext(request)
             )
             return ajax_success({"html": html})

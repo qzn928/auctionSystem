@@ -61,7 +61,6 @@ def fvlist(request, template_name):
 def voadd(request, template_name):
     '''接收post请求，生成初始发票'''
     if request.method == "POST":
-        print "1111111"
         post_data = json.loads(request.POST.get("data", ''))
         all_lot_nu = post_data.get("all_lot_nu")
         new_rate = post_data.get("new_rate")
@@ -69,7 +68,6 @@ def voadd(request, template_name):
         comm_list = Commodity.objects.filter(lot__in=all_lot_nu)
         invoice_nu = Invoice.get_last_nu()
         form_data = {
-            "commodity": ','.join(all_lot_nu),
             "customer_id": post_data.get("customer_id"),
             "begin_exchange_rate": new_rate,
             "invoice_nu": invoice_nu,
@@ -81,7 +79,9 @@ def voadd(request, template_name):
         }
         iform = InvoiceForm(form_data)
         if iform.is_valid():
-            iform.save()
+            invoice_com = iform.save(commit=False)
+            invoice_com.commodity_set.add(comm_list)
+            invoice_com.save()
             comm_list.update(is_invoice=1)
             mem = memcache.Client(settings.MEMCACHES)
             mem.set_multi({"begin_rate": new_rate, "commpression_rate": com_rate})
@@ -106,9 +106,7 @@ def lot_list_invoice(request, invoice_id):
         invoice_obj = Invoice.objects.get(pk=invoice_id)
     except Invoice.DoesNotExist:
         return ajax_success([])
-    print '111111111111111', invoice_obj.commodity
-    all_lot = Commodity.objects.filter(lot__in=invoice_obj.commodity.split(","))
-    print all_lot
+    all_lot = invoice_obj.commodity_set.all()
     json_lot_list = [i.toDICT() for i in all_lot]
     return ajax_success(json_lot_list)
 
@@ -121,7 +119,7 @@ def vmodify(request, invoice_id):
         invoice_obj = Invoice.objects.get(pk=invoice_id)
     except Invoice.DoesNotExist:
         return ajax_error("invoice obj does not exist")
-    all_in_lot_nu = invoice_obj.commodity.split(",")
+    all_in_lot_nu = [com_obj.lot for com_obj in invoice_obj.commodity_set.all()]
     all_post_lot_nu = json.loads(request.POST.get("data", ''))
     all_lot_nu = list(set(all_in_lot_nu)-set(all_post_lot_nu))
     if len(all_lot_nu) == 0:
@@ -134,7 +132,10 @@ def vmodify(request, invoice_id):
         "cost_sum": 200
     }
     [setattr(invoice_obj, key, val) for key, val in form_data.items() ]
-    invoice_obj.save()
+    commodity_list = Commodity.objects.filter(lot__in=all_lot_nu)
+    invoice_com = invoice_obj.save(commit=False)
+    invoice_com.commodity_set.add(commodity_list)
+    invoice_com.save()
     Commodity.objects.filter(lot__in=all_post_lot_nu).update(is_invoice=0)
     return ajax_success()
 

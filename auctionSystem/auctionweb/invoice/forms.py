@@ -12,7 +12,6 @@ class InvoiceForm(forms.ModelForm):
     class Meta:
         model = Invoice
         fields = (
-            "commodity",
             "invoice_nu",
             "customer_id",
             "goods_type",

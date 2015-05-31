@@ -4,7 +4,6 @@ local_settings.py
 *.db
 PGCSite.egg-info
 *.rrd
-migrations
 .idea
 *.swp
 auction

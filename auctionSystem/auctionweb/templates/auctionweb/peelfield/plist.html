@@ -46,7 +46,7 @@
         <h4 class="modal-title" id="myModalLabel">添加削皮场</h4>
       </div>
       <div>
-         <form class="form-inline" id="submit_form" action="{% url 'add_peel_field' %}" method="POST" style="margin-top:10px;display:none">
+         <form class="form-inline" id="submit_form" method="POST" style="margin-top:20px">
             <div class="form-group">
                 <label for="peel_field">削皮场</label>
                 <select name="peel_field" id="peel_field" class="form-contorl">
@@ -71,7 +71,6 @@
       <table style="margin-bottom:20px" class="display" id="lotTable" cellspacing="0" width="100%">
         <thead>
           <tr>
-            <th style="width:20px;text-align:center"><span>选择</span></th>
             <th><span>品种</span></th>
             <th><span>性别</span></th>
             <th><span>LOT号</span></th>
@@ -94,51 +93,27 @@
         $("#peel_field").select2({"width": '150px'});
         $("#peel_inform").select2({"width": '150px'});
         function drawTable(invoice_id){
+            $("#submit_form").ajaxForm({
+                url: "/peelfield/add/"+invoice_id+"/",
+                data: {
+                    "csrfmiddlewaretoken": $("{%csrf_token%}").val()
+                },
+                success: function(data){
+                    if (data.success){
+                        alert("create successfully!!!")
+                        $("#paddModal").find("button[data-dismiss]").trigger("click")
+
+                    }else{
+                        alert(data.error_message)
+                    }
+                }
+            })
             var lotTable = $("#lotTable").DataTable({
                 "searching": false,
                 "paging": false,
                 "info": false,
-                "sDom": '<"toolsbar"><"H"TfrC>t<"F"ip>',
-                "oTableTools":{
-                    "aButtons":[
-                        {
-                            "sExtends": "text",
-                            "sButtonText": "add peelfield",
-                            "fnClick": function(nButton, oConfig, oFlash){
-                                var ott = lotTable.row(".selected")
-                                if (ott.length<1){
-                                    alert("至少选择一条数据删除!")
-                                    return 
-                                }
-                                var ott = lotTable.rows(".selected")
-                                var lot_nu_arr = [];
-                                $.each(ott.data(), function(i, n){
-                                    lot_nu_arr.push(n.id);
-                                })
-                                console.log(lot_nu_arr)
-                                $("#submit_form").css("display", "block")
-                                $("#cancel").on("click", function(){
-                                    $("#submit_form").css("display", "none")
-                                });
-                                $("#submit_form").ajaxForm({
-                                    data: {
-                                        "com_list": JSON.stringify(lot_nu_arr), 
-                                        "csrfmiddlewaretoken": $("{%csrf_token%}").val()
-                                    },
-                                    success: function(data){
-                                        console.log(data)
-                                    }
-                                })
-                            }
-                        }
-                    ]
-                },
                 "ajaxSource":"/invoice/inlot/"+invoice_id+"",
                 "columns":[
-                    {"data": null, "className": "ceTable", "fnCreatedCell":function(nTd, sData, oData, iRow, iCol){
-                        element = $(nTd).empty();
-                        element.append("<input type='checkbox' name='checkList' />");
-                    }}, 
                     {"data": "types"},
                     {"data": "sex"},
                     {"data": "lot"},
@@ -169,7 +144,6 @@
                                 alert("选择一行进行操作")
                                 return false
                             };
-                            $("#submit_form").css("display", "none")
                             $("#paddModal").modal();
                             $("#lotTable").DataTable().destroy()
                             drawTable(selectAtrs[0].id);
