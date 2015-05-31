@@ -80,8 +80,8 @@ def voadd(request, template_name):
         iform = InvoiceForm(form_data)
         if iform.is_valid():
             invoice_com = iform.save(commit=False)
-            invoice_com.commodity_set.add(comm_list)
             invoice_com.save()
+            invoice_com.commodity_set = comm_list
             comm_list.update(is_invoice=1)
             mem = memcache.Client(settings.MEMCACHES)
             mem.set_multi({"begin_rate": new_rate, "commpression_rate": com_rate})
@@ -107,6 +107,7 @@ def lot_list_invoice(request, invoice_id):
     except Invoice.DoesNotExist:
         return ajax_success([])
     all_lot = invoice_obj.commodity_set.all()
+    print all_lot
     json_lot_list = [i.toDICT() for i in all_lot]
     return ajax_success(json_lot_list)
 

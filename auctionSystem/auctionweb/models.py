@@ -102,6 +102,9 @@ class Invoice(models.Model):
     out_peel_time = models.DateField(null=True) 
     # 发货时间
     delivery_time = models.DateField(null=True)
+    # 是否货运
+    is_ship = models.IntegerField(default=0) 
+
 
     def __str__(self):
         return self.invoice_nu
@@ -122,6 +125,91 @@ class Invoice(models.Model):
             else:
                 invoice_data.append((field, field_val))
         return dict(invoice_data)
+    
+    def get_commodity_info(self):
+        commodity_list = self.commodity_set.all()
+        com_info_dict = {}
+        if commodity_list:
+            com_info_dict["commodity"] = commodity_list[0]
+            peel_price = 0
+            for com in commodity_list:
+                peel_price += com.peel_inform.peel_price
+            com_info_dict["peel_price"] = peel_price
+        return com_info_dict
+
+class Clearance(models.Model):
+    '''清关公司'''
+    # 清关公司名字
+    name = models.CharField(max_length=50, unique=True)
+
+    def __str__(self):
+        return self.name
+    
+class Delivery(models.Model):
+    '''货运公司'''
+    # 地接公司名字
+    name = models.CharField(max_length=50, unique=True)
+    
+    def __str__(self):
+        return self.name
+    
+class Harbour(models.Model):
+    '''港口'''
+    # 港口名字
+    name = models.CharField(max_length=50, unique=True)
+
+    def __str__(self):
+        return self.name
+
+class ForeignShip(models.Model):
+    '''国外货运'''
+    # 公司名称
+    name = models.CharField(max_length=50, unique=True)
+    def __str__(self):
+        return self.name
+    
+def Shiping(models.Model):
+    '''货运表'''
+    # 货运号
+    shiping_nu = models.CharField(max_length=20) 
+    # 拍卖日期
+    auction_date = models.DateField()
+    # 货物数量
+    com_num = models.IntegerField()
+    # 发票总额
+    invoice_count = models.FloatField()
+    # 国外货运公司
+    foreign_ship =  models.ForeignKey(ForeignShip)
+    # 地接公司
+    delivery = models.ForeignKey(Delivery)
+    # 清关公司
+    clearance_company = models.ForeignKey(Clearance)
+    # 主单号
+    master_nu = models.CharField(max_length=50)
+    # 分单号
+    branch_nu = models.CharField(max_length=50)
+    # 计件数量
+    ship_num = models.IntegerField()
+    #计费重量
+    charge_weight = models.IntegerField()
+    # 起飞日期
+    takeoff_time = models.DateField()
+    #落地日期
+    arrive_time = models.DateField()
+
+    def __str__(self):
+        return self.shiping_nu
+
+class InvoiceShipInfo(models.Model):
+    '''发票的货运信息'''
+    # 发票
+    invoice = models.OneToOne(Invoice)
+    # 清关公司
+    clearance_company = models.ForeignKey(Clearance) 
+    # 地接公司
+    delivery_company = models.ForeignKey(Delivery)
+    # 港口
+    harbour = models.ForeignKey(Harbour)
 
 class Commodity(models.Model):
     """商品"""
@@ -172,6 +260,8 @@ class Commodity(models.Model):
                     commodity.append((field, getattr(getattr(self, field), "name")))
                 except AttributeError:
                     commodity.append((field, ''))
+            elif field == "invoice":
+                    commodity.append((field, getattr(getattr(self, field), "invoice_nu")))
             else:
                 commodity.append((field, getattr(self, field)))
         return dict(commodity)

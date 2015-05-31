@@ -32,10 +32,21 @@ def com_list_by_peelname(request, template_name):
 
 def get_classify_data(request):
     back_data = {}
-    all_peelfield_obj = PeelField.objects.all()
-    for peel in all_peelfield_obj:
-        commodity_list = peel.commodity_set.all()
-        back_data[peel.id] = [i.toDICT() for i in commodity_list]
+    all_invoice_obj = Invoice.objects.exclude(is_pre=1)
+    for v in all_invoice_obj:
+        data = {}
+        commodity_info = v.get_commodity_info()
+        print commodity_info
+        com_obj = commodity_info.get("commodity")
+        peel_id = com_obj.peel_field.pk
+        data["auction"] = com_obj.auction.name
+        data["peel_inform"] = com_obj.peel_inform.name
+        data["peel_price"] = commodity_info.get("peel_price")
+        data.update(v.toDICT())
+        if peel_id in back_data:
+            back_data[peel_id].append(data)
+        else:
+            back_data[peel_id] = [data]
     return ajax_success(back_data)
 
 def get_invoice_data(request):

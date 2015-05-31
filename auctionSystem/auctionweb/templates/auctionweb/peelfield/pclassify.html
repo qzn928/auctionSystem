@@ -32,19 +32,15 @@
                         <table id="peel{{peel.id}}" cellspacing="0" width="100%">
                             <thead>
                                 <tr>
-                                    <th><span>品种</span></th>
-                                    <th><span>性别</span></th>
-                                    <th><span>LOT号</span></th>
-                                    <th><span>客户编号</span></th>
-                                    <th><span>尺码</span></th>
-                                    <th><span>等级</span></th>
-                                    <th><span>颜色</span></th>
-                                    <th><span>清晰度</span></th>
-                                    <th><span>数量</span></th>
-                                    <th><span>敲锤价</span></th>
-                                    <th><span>评估</span></th>
+                                    <th><span>拍卖会</span></th>
+                                    <th><span>时间</span></th>
+                                    <th><span>发票号</span></th>
                                     <th><span>削皮指示</span></th>
-                                    <th><span>备注</span></th>
+                                    <th><span>削皮费</span></th>
+                                    <th><span>下缸时间</span></th>
+                                    <th><span>出缸时间</span></th>
+                                    <th><span>发货时间</span></th>
+                                    <th><span>状态</span></th>
                                 </tr>
                             </thead>
                         </table>
@@ -55,26 +51,47 @@
         </div>
     </div>
 </div>
-
 {% endblock %}
 <!-- Modal -->
 {% block footer_block %}
 <style>
 .modal-backdrop{z-index:0;}
 </style>
-<div class="modal fade" id="commentModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+<div class="modal fade" id="timeModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        <h4 class="modal-title" id="myModalLabel">备注信息</h4>
+        <h4 class="modal-title" id="myModalLabel">填写初始汇率</h4>
       </div>
-      <div class="modal-body">
-        <span class="comment"></span>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-      </div>
+        <form class="form-horizontal" role="form" action="{% url 'cinvoice' %}" id="voaddForm"> 
+          <div class="modal-body">
+                <div class="form-body" style="padding-bottom:0px">
+                    <div class="form-group">
+                        <label class="col-sm-3 control-label">下缸时间</label>
+                        <div class="col-sm-9"> 
+                            <input type="text" name="peel_time" id="peel_time" class="form-control" placeholder="must"/>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-3 control-label">出缸时间</label>
+                        <div class="col-sm-9"> 
+                            <input type="text" name="out_peel_time" id="out_peel_time" class="form-control"  placeholder="must"/>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-3 control-label">发货时间</label>
+                        <div class="col-sm-9"> 
+                            <input type="text" name="delivery_time" id="delivery_time" class="form-control" placeholder="must"/>
+                        </div>
+                    </div>
+                </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-primary" id="invoiceSumit">Save</button>
+            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+          </div>
+        </form>
     </div>
   </div>
 </div>
@@ -86,29 +103,30 @@
                 "searching": false,
                 "info": false,
                 "paging": false,
+                "sDom": '<"toolsbar"><"H"TfrC>t<"F"ip>',
                 "data": data,
+                "oTableTools":{
+                    "sRowSelect": "single",
+                    "aButtons":[
+                        {
+                            "sExtends": "text",
+                            "sButtonText": "add time",
+                            "fnClick": function(nButton, oConfig, oFlash){
+                                $("#timeModal").modal();
+                            }
+                        }
+                      ]
+                 },
                 "columns":[
-                    {"data": "types"},
-                    {"data": "sex"},
-                    {"data": "lot"},
-                    {"data": "customer_id"},
-                    {"data": "size"},
-                    {"data": "level"},
-                    {"data": "color"},
-                    {"data": "definition"},
-                    {"data": "number"},
-                    {"data": "final_price"},
-                    {"data": "evaluation"},
+                    {"data": "auction"},
+                    {"data": "modify_date"},
+                    {"data": "auction"},
                     {"data": "peel_inform"},
-                    {"data": "remarks", "fnCreatedCell": function(nTd, sData, oData, iRow, iCol){
-                        element = $(nTd).empty();
-                        lookBtn = $("<input type='button' class='btn btn-sm btn-success' value='查看'/>").on("click", function(){
-                            var comment = oData["remarks"];
-                            $("#commentModal .comment").text(comment)
-                            $("#commentModal").modal();
-                        })
-                        element.append(lookBtn)
-                    }},
+                    {"data": "peel_price"},
+                    {"data": "peel_time"},
+                    {"data": "out_peel_time"},
+                    {"data": "delivery_time"},
+                    {"data": null},
                 ]
             })
        }
