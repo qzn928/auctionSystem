@@ -62,9 +62,9 @@
     <div class="modal-content">
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        <h4 class="modal-title" id="myModalLabel">填写初始汇率</h4>
+        <h4 class="modal-title" id="myModalLabel">时间添加</h4>
       </div>
-        <form class="form-horizontal" role="form" action="{% url 'cinvoice' %}" id="voaddForm"> 
+        <form class="form-horizontal" role="form" id="addPtimeForm"> 
           <div class="modal-body">
                 <div class="form-body" style="padding-bottom:0px">
                     <div class="form-group">
@@ -88,7 +88,7 @@
                 </div>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-primary" id="invoiceSumit">Save</button>
+            <button type="submit" class="btn btn-primary" id="invoiceSumit">Save</button>
             <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
           </div>
         </form>
@@ -98,13 +98,13 @@
 {% endblock %}
 {% block footer_js %}
     <script type="text/javascript">
-        function peeltable(peel_id, data){
+        function peeltable(peel_id, list_data){
              $("#peel"+peel_id).DataTable({
                 "searching": false,
                 "info": false,
                 "paging": false,
                 "sDom": '<"toolsbar"><"H"TfrC>t<"F"ip>',
-                "data": data,
+                "data": list_data,
                 "oTableTools":{
                     "sRowSelect": "single",
                     "aButtons":[
@@ -112,6 +112,27 @@
                             "sExtends": "text",
                             "sButtonText": "add time",
                             "fnClick": function(nButton, oConfig, oFlash){
+                                var ott = TableTools.fnGetInstance("peel"+peel_id);
+                                var selectAtrs = ott.fnGetSelectedData();
+                                if(selectAtrs.length<1){
+                                    alert("至少选择一行进行操作")
+                                    return 
+                                }
+                                var invoice_id = selectAtrs[0].id;
+                                $("#addPtimeForm").ajaxForm({
+                                    type: "post",
+                                    url: "/invoice/add/peeltime/"+invoice_id+"/",
+                                    data: {"csrfmiddlewaretoken": $("{%csrf_token%}").val()},
+                                    success: function(data){
+                                        if(data.success){
+                                            alert("successfully!!!")
+                                            $("#timeModal").find("button[data-dismiss]").trigger("click")
+                                            $("#peel"+peel_id).ajax.reload();
+                                        }else{
+                                            alert("failed!!!")
+                                        }
+                                    }
+                                })
                                 $("#timeModal").modal();
                             }
                         }
@@ -120,13 +141,13 @@
                 "columns":[
                     {"data": "auction"},
                     {"data": "modify_date"},
-                    {"data": "auction"},
+                    {"data": "auction_invoice"},
                     {"data": "peel_inform"},
                     {"data": "peel_price"},
                     {"data": "peel_time"},
                     {"data": "out_peel_time"},
                     {"data": "delivery_time"},
-                    {"data": null},
+                    {"data": "peel_status"},
                 ]
             })
        }

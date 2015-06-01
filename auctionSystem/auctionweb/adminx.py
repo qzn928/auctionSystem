@@ -42,3 +42,23 @@ class PeelInformAdmin(object):
     pass
     
 xadmin.site.register(PeelInform, PeelInformAdmin)
+
+class ClearanceAdmin(object):
+    pass
+    
+xadmin.site.register(Clearance, ClearanceAdmin)
+
+class DeliveryAdmin(object):
+    pass
+    
+xadmin.site.register(Delivery, DeliveryAdmin)
+
+class HarbourAdmin(object):
+    pass
+    
+xadmin.site.register(Harbour, HarbourAdmin)
+
+class ForeignShipAdmin(object):
+    pass
+    
+xadmin.site.register(ForeignShip, ForeignShipAdmin)

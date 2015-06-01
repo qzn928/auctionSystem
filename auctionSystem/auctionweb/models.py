@@ -1,4 +1,7 @@
 # -*- coding:utf-8 -*-
+
+import datetime
+
 from django.db import models
 
 '''
@@ -67,6 +70,36 @@ class PeelInform(models.Model):
     def __str__(self):
         return self.name
 
+class Clearance(models.Model):
+    '''清关公司'''
+    # 清关公司名字
+    name = models.CharField(max_length=50, unique=True)
+
+    def __str__(self):
+        return self.name
+    
+class Delivery(models.Model):
+    '''货运公司'''
+    # 地接公司名字
+    name = models.CharField(max_length=50, unique=True)
+    
+    def __str__(self):
+        return self.name
+    
+class Harbour(models.Model):
+    '''港口'''
+    # 港口名字
+    name = models.CharField(max_length=50, unique=True)
+
+    def __str__(self):
+        return self.name
+
+class ForeignShip(models.Model):
+    '''国外货运'''
+    # 公司名称
+    name = models.CharField(max_length=50, unique=True)
+    def __str__(self):
+        return self.name
 
 class Invoice(models.Model):
     """发票"""
@@ -104,7 +137,12 @@ class Invoice(models.Model):
     delivery_time = models.DateField(null=True)
     # 是否货运
     is_ship = models.IntegerField(default=0) 
-
+    # 清关公司
+    clearance_company = models.ForeignKey(Clearance, null=True) 
+    # 地接公司
+    delivery_company = models.ForeignKey(Delivery, null=True)
+    # 港口
+    harbour = models.ForeignKey(Harbour, null=True)
 
     def __str__(self):
         return self.invoice_nu
@@ -114,6 +152,20 @@ class Invoice(models.Model):
         flag_str = "#00"
         o_count = cls.objects.all().count()
         return flag_str + str(o_count+1)
+    
+    @property
+    def get_peel_status(self):
+        now = datetime.datetime.now()
+        date = datetime.date(now.year, now.month, now.day)
+        if date<self.peel_time:
+            status = "为下缸"
+        elif self.peel_time<date<self.out_peel_time:
+            status = "已下缸未完成"
+        elif self.out_peel_time<date<self.delivery_time:
+            status = "已完成未发货"
+        else:
+            status = "已发货"
+        return status
 
     def toDICT(self):
         invoice_data = []
@@ -122,6 +174,13 @@ class Invoice(models.Model):
             field_val = getattr(self, field)
             if field == "modify_date" and field_val:
                 invoice_data.append((field, field_val.strftime("%Y-%m-%d %H:%M")))
+            elif field in ["clearance_company", "delivery_company", "harbour"]:
+                try:
+                    invoice_data.append((field, getattr(getattr(self, field), "name")))
+                except AttributeError:
+                    invoice_data.append((field, ''))
+            elif field in ["peel_time", "out_peel_time", "delivery_time"] and field_val:
+                invoice_data.append((field, field_val.strftime("%Y-%m-%d")))
             else:
                 invoice_data.append((field, field_val))
         return dict(invoice_data)
@@ -137,38 +196,8 @@ class Invoice(models.Model):
             com_info_dict["peel_price"] = peel_price
         return com_info_dict
 
-class Clearance(models.Model):
-    '''清关公司'''
-    # 清关公司名字
-    name = models.CharField(max_length=50, unique=True)
-
-    def __str__(self):
-        return self.name
     
-class Delivery(models.Model):
-    '''货运公司'''
-    # 地接公司名字
-    name = models.CharField(max_length=50, unique=True)
-    
-    def __str__(self):
-        return self.name
-    
-class Harbour(models.Model):
-    '''港口'''
-    # 港口名字
-    name = models.CharField(max_length=50, unique=True)
-
-    def __str__(self):
-        return self.name
-
-class ForeignShip(models.Model):
-    '''国外货运'''
-    # 公司名称
-    name = models.CharField(max_length=50, unique=True)
-    def __str__(self):
-        return self.name
-    
-def Shiping(models.Model):
+class Shiping(models.Model):
     '''货运表'''
     # 货运号
     shiping_nu = models.CharField(max_length=20) 
@@ -182,6 +211,14 @@ def Shiping(models.Model):
     foreign_ship =  models.ForeignKey(ForeignShip)
     # 地接公司
     delivery = models.ForeignKey(Delivery)
+    # 货运单发票号
+    invoice_nu = models.CharField(max_length=20)
+    # 地接费用
+    delivery_fee = models.FloatField()
+    # 代理费用
+    proxy_fee = models.FloatField()
+    # 总费用
+    total_fee = models.FloatField()
     # 清关公司
     clearance_company = models.ForeignKey(Clearance)
     # 主单号
@@ -200,21 +237,12 @@ def Shiping(models.Model):
     def __str__(self):
         return self.shiping_nu
 
-class InvoiceShipInfo(models.Model):
-    '''发票的货运信息'''
-    # 发票
-    invoice = models.OneToOne(Invoice)
-    # 清关公司
-    clearance_company = models.ForeignKey(Clearance) 
-    # 地接公司
-    delivery_company = models.ForeignKey(Delivery)
-    # 港口
-    harbour = models.ForeignKey(Harbour)
-
 class Commodity(models.Model):
     """商品"""
     # 商品lot号
     lot = models.CharField(max_length=20, unique=True) 
+    # 拍卖下来的日期
+    auction_time = models.DateField()
     # 品种
     types = models.CharField(max_length=50) 
     # 性别
@@ -261,7 +289,15 @@ class Commodity(models.Model):
                 except AttributeError:
                     commodity.append((field, ''))
             elif field == "invoice":
+                try:
                     commodity.append((field, getattr(getattr(self, field), "invoice_nu")))
+                except AttributeError:
+                    commodity.append((field, ''))
+            elif field == "auction_time":
+                try:
+                    commodity.append((field, getattr(self, field).strftime("%Y-%m-%d")))
+                except AttributeError:
+                    commodity.append((field, ''))
             else:
                 commodity.append((field, getattr(self, field)))
         return dict(commodity)

@@ -8,3 +8,4 @@ PGCSite.egg-info
 *.swp
 auction
 local_settings.*
+migrations

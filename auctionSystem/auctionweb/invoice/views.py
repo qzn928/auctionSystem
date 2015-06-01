@@ -153,3 +153,16 @@ def vmodify_info(request, invoice_id, template_name):
         context_instance=RequestContext(request)
     )
     return ajax_success(html=html)
+
+def add_peel_time(request, invoice_id):
+    if request.method != "POST":
+        raise Http404
+    try:
+        invoice_obj = Invoice.objects.get(pk=invoice_id)
+    except Invoice.DoesNotExist:
+        return ajax_error("invoice obj does not exist")
+    invoice_obj.peel_time = request.POST.get("peel_time")
+    invoice_obj.out_peel_time = request.POST.get("out_peel_time")
+    invoice_obj.delivery_time = request.POST.get("delivery_time")
+    invoice_obj.save()
+    return ajax_success()
