@@ -1,0 +1,112 @@
+
+{% extends "auctionweb/layout.html" %}
+{% block header_js %}
+    <style>
+        .ceTable{text-align:center}
+    </style>
+{% endblock%}
+{% block content %}
+<div class="portlet box green">
+    <div class="portlet-title">
+        <div class="caption">
+            <i class="fa fa-gift"></i>
+            Unshipped Invoice List
+        </div>
+        <div class="tools hidden-xs">
+            <a href="javascript:;" class="collapse">
+            </a>
+        </div>
+    </div>
+    <div class="portlet-body">
+        <table class="display" id="usInvoice" cellspacing="0" width="100%">
+            <thead>
+                <tr>
+                    <th style="width:100px;text-align:center"><span>选择</span></th>
+                    <th><span>拍卖会</span></th>
+                    <th><span>时间</span></th>
+                    <th><span>Invoice No</span></th>
+                    <th><span>Customer No</span></th>
+                    <th><span>数量</span></th>
+                    <th><span>原始发票金额</span></th>
+                    <th><span>削皮场</span></th>
+                    <th><span>地接公司</span></th>
+                    <th><span>清关公司</span></th>
+                    <th><span>到港</span></th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+</div>
+
+{% endblock %}
+<!-- Modal -->
+{% block footer_block %}
+<style>
+.modal-backdrop{z-index:0;}
+</style>
+<div class="modal fade" id="commentModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="myModalLabel">备注信息</h4>
+      </div>
+      <div class="modal-body">
+        <span class="comment"></span>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block footer_js %}
+    <script type="text/javascript">
+        var usinvoice = $("#usInvoice").DataTable({
+            "searching": true,
+            "sDom": '<"toolsbar"><"H"TfrC>t<"F"ip>',
+            "oTableTools":{
+                "aButtons":[
+                    {
+                        "sExtends": "text",
+                        "sButtonText": "add company",
+                        "fnClick": function(nButton, oConfig, oFlash){
+                            var ott = lotTable.row(".selected")
+                            if(ott.length!=1){
+                                alert("至少选择一列!")
+                            }else{
+                                
+                            }
+                            
+                        }
+                    }
+                ]
+            },
+            "ajaxSource":"{% url 'unshipped_data' %}",
+            "columns":[
+                {"data": null, "className": "ceTable", "fnCreatedCell":function(nTd, sData, oData, iRow, iCol){
+                    element = $(nTd).empty();
+                    element.append("<input type='checkbox' name='checkList' />");
+                }},
+                {"data": "auction"},
+                {"data": "modify_date"},
+                {"data": "invoice_nu"},
+                {"data": "customer_no"},
+                {"data": "goods_nu"},
+                {"data": "dollar_sum"},
+                {"data": "peel_name"},
+                {"data": "delivery_company"},
+                {"data": "clearance_company"},
+                {"data": "harbour"},
+            ]
+        })
+        // 根据checkbox 选中列
+        $("#usInvoice").on('click','tr input[name="checkList"]',function(){
+            var $tr =$(this).parents('tr');
+            $tr.toggleClass('selected');
+        })
+    </script>
+{% endblock %}
+{% block navname %}commodity{% endblock %}
+
