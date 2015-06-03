@@ -9,7 +9,7 @@
     <div class="portlet-title">
         <div class="caption">
             <i class="fa fa-gift"></i>
-            Unshipped Invoice List
+            Ship List
         </div>
         <div class="tools hidden-xs">
             <a href="javascript:;" class="collapse">
@@ -17,20 +17,23 @@
         </div>
     </div>
     <div class="portlet-body">
-        <table class="display" id="usInvoice" cellspacing="0" width="100%">
+        <table class="display" id="ship" cellspacing="0" width="100%">
             <thead>
                 <tr>
-                    <th style="width:100px;text-align:center"><span>选择</span></th>
-                    <th><span>拍卖会</span></th>
-                    <th><span>时间</span></th>
-                    <th><span>Invoice No</span></th>
-                    <th><span>Customer No</span></th>
+                    <th><span>Order No</span></th>
+                    <th><span>拍卖会日期</span></th>
                     <th><span>数量</span></th>
-                    <th><span>原始发票金额</span></th>
-                    <th><span>削皮场</span></th>
+                    <th><span>原始发票总额</span></th>
+                    <th><span>国外货运公司</span></th>
                     <th><span>地接公司</span></th>
                     <th><span>清关公司</span></th>
-                    <th><span>到港</span></th>
+                    <th><span>主单号</span></th>
+                    <th><span>分单号</span></th>
+                    <th><span>件数</span></th>
+                    <th><span>计费重量</span></th>
+                    <th><span>起飞日期</span></th>
+                    <th><span>落地日期</span></th>
+                    <th><span>货运状态</span></th>
                 </tr>
             </thead>
         </table>
@@ -100,7 +103,7 @@
         $("#delivery_company").select2();
         $("#clearance_company").select2();
         $("#harbour").select2();
-        var usinvoice = $("#usInvoice").DataTable({
+        var ship = $("#ship").DataTable({
             "searching": true,
             "sDom": '<"toolsbar"><"H"TfrC>t<"F"ip>',
             "oTableTools":{
@@ -169,22 +172,22 @@
                     }
                 ]
             },
-            "ajaxSource":"{% url 'unshipped_data' %}",
+            "ajaxSource":"{% url 'ship_data' %}",
             "columns":[
-                {"data": null, "className": "ceTable", "fnCreatedCell":function(nTd, sData, oData, iRow, iCol){
-                    element = $(nTd).empty();
-                    element.append("<input type='checkbox' name='checkList' />");
-                }},
-                {"data": "auction"},
-                {"data": "modify_date"},
-                {"data": "invoice_nu"},
-                {"data": "customer_no"},
-                {"data": "goods_nu"},
-                {"data": "dollar_sum"},
-                {"data": "peel_name"},
-                {"data": "delivery_company"},
+                {"data": "shiping_nu"},
+                {"data": "auction_date"},
+                {"data": "com_sum"},
+                {"data": "invoice_count"},
+                {"data": "foreign_ship"},
+                {"data": "delivery"},
                 {"data": "clearance_company"},
-                {"data": "harbour"},
+                {"data": "master_nu"},
+                {"data": "branch_nu"},
+                {"data": "ship_num"},
+                {"data": "charge_weight"},
+                {"data": "takeoff_time"},
+                {"data": "arrive_time"},
+                {"data": "null"},
             ]
         })
         // 根据checkbox 选中列

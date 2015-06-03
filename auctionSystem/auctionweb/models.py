@@ -183,6 +183,7 @@ class Invoice(models.Model):
                 invoice_data.append((field, field_val.strftime("%Y-%m-%d")))
             else:
                 invoice_data.append((field, field_val))
+            invoice_data.append(("status", self.get_peel_status))
         return dict(invoice_data)
     
     def get_commodity_info(self):
@@ -191,12 +192,23 @@ class Invoice(models.Model):
         if commodity_list:
             com_info_dict["commodity"] = commodity_list[0]
             peel_price = 0
-            for com in commodity_list:
-                peel_price += com.peel_inform.peel_price
+            try:
+                for com in commodity_list:
+                    peel_price += com.peel_inform.peel_price
+            except:pass
             com_info_dict["peel_price"] = peel_price
         return com_info_dict
-
     
+    @property
+    def get_peel_status(self):
+        commodity_list = self.commodity_set.all()
+        status = "未添加削皮指示" 
+        if commodity_list:
+            peel_field = commodity_list[0].peel_field
+            peel_inform = commodity_list[0].peel_inform
+            if peel_field and peel_inform:
+                status = "已添加削皮指示"
+        return status
 class Shiping(models.Model):
     '''货运表'''
     # 货运号
@@ -208,34 +220,58 @@ class Shiping(models.Model):
     # 发票总额
     invoice_count = models.FloatField()
     # 国外货运公司
-    foreign_ship =  models.ForeignKey(ForeignShip)
+    foreign_ship =  models.ForeignKey(ForeignShip, null=True)
     # 地接公司
     delivery = models.ForeignKey(Delivery)
     # 货运单发票号
-    invoice_nu = models.CharField(max_length=20)
+    invoice_nu = models.CharField(max_length=20, null=True)
     # 地接费用
-    delivery_fee = models.FloatField()
+    delivery_fee = models.FloatField(null=True)
     # 代理费用
-    proxy_fee = models.FloatField()
+    proxy_fee = models.FloatField(null=True)
     # 总费用
-    total_fee = models.FloatField()
+    total_fee = models.FloatField(null=True)
     # 清关公司
     clearance_company = models.ForeignKey(Clearance)
     # 主单号
-    master_nu = models.CharField(max_length=50)
+    master_nu = models.CharField(max_length=50, null=True)
     # 分单号
-    branch_nu = models.CharField(max_length=50)
+    branch_nu = models.CharField(max_length=50, null=True)
     # 计件数量
-    ship_num = models.IntegerField()
+    ship_num = models.IntegerField(null=True)
     #计费重量
-    charge_weight = models.IntegerField()
+    charge_weight = models.IntegerField(null=True)
     # 起飞日期
-    takeoff_time = models.DateField()
+    takeoff_time = models.DateField(null=True)
     #落地日期
-    arrive_time = models.DateField()
+    arrive_time = models.DateField(null=True)
 
     def __str__(self):
         return self.shiping_nu
+
+    @classmethod
+    def get_last_nu(cls):
+        flag_str = "#00"
+        o_count = cls.objects.all().count()
+        return flag_str + str(o_count+1)
+
+    def toDICT(self):
+        ship_list = []
+        fields = [f.name for f in self._meta.fields]
+        for field in fields:
+            if field in ["foreign_ship", "clearance_company", "delivery"]:
+                try:
+                    ship_list.append((field, getattr(getattr(self, field), "name")))
+                except AttributeError:
+                    ship_list.append((field, ''))
+            elif field in ["auction_date", "takeoff_time", "arrive_time"]:
+                try:
+                    ship_list.append((field, getattr(self, field).strftime("%Y-%m-%d")))
+                except AttributeError:
+                    ship_list.append((field, ''))
+            else:
+                ship_list.append((field, getattr(self, field)))
+        return dict(ship_list)
 
 class Commodity(models.Model):
     """商品"""

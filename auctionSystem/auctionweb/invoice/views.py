@@ -11,7 +11,7 @@ from django.template import RequestContext
 from django.views.decorators.csrf import csrf_exempt
 from django.http import Http404
 
-from auctionweb.models import Customer, PeelField, Commodity, Invoice
+from auctionweb.models import * 
 from auctionweb.shortcuts.ajax import ajax_success, ajax_error
 from auctionweb import mckeys
 from auctionweb.invoice.forms import InvoiceForm, FinalInvoiceForm
@@ -155,6 +155,7 @@ def vmodify_info(request, invoice_id, template_name):
     return ajax_success(html=html)
 
 def add_peel_time(request, invoice_id):
+    '''添加发票的削皮场流程时间参数'''
     if request.method != "POST":
         raise Http404
     try:
@@ -165,4 +166,26 @@ def add_peel_time(request, invoice_id):
     invoice_obj.out_peel_time = request.POST.get("out_peel_time")
     invoice_obj.delivery_time = request.POST.get("delivery_time")
     invoice_obj.save()
+    return ajax_success()
+
+def add_ship_com(request):
+    '''添加发票的货运相关公司'''
+    if request.method != "POST":
+        raise Http404
+    print request.POST
+    clearance_com = request.POST.get("clearance_company") # 清关公司
+    delivery_com = request.POST.get("delivery_company") # 地接公司
+    harbour = request.POST.get("harbour") # 港口
+    invoice_id_list =  json.loads(request.POST.get("invoice_id_list"))
+    update_dict = {
+        "clearance_company": clearance_com,
+        "delivery_company": delivery_com,
+        "harbour": harbour
+    }
+    update_dict = {
+        "clearance_company": Clearance.objects.get(name=clearance_com),
+        "delivery_company": Delivery.objects.get(name=delivery_com),
+        "harbour": Harbour.objects.get(name=harbour),
+    }
+    Invoice.objects.filter(id__in=invoice_id_list).update(**update_dict)
     return ajax_success()
