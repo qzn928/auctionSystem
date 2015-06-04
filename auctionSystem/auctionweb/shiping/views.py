@@ -51,25 +51,42 @@ def create_ship(request):
     ship_invoice_obj = Invoice.objects.filter(id__in=invoice_id_list)
     goods_sum = ship_invoice_obj.aggregate(goods_nu_sum=Sum("goods_nu"),cost_sum=Sum("cost_sum"))
     auction_date = ship_invoice_obj[0].get_commodity_info().get("commodity").auction_time
-    print goods_sum
-    Shiping.objects.create(
+    ship_obj = Shiping(
         shiping_nu=Shiping.get_last_nu(),
         com_num=goods_sum.get("goods_nu_sum"),
         invoice_count=goods_sum.get("cost_sum"),
         auction_date=auction_date,
         delivery=ship_invoice_obj[0].delivery_company,
         clearance_company=ship_invoice_obj[0].clearance_company,
-        is_ship = 1
-    )
+    ).save()
+    ship_invoice_obj.update(is_ship=1)
     return ajax_success()
 
 
 def ship_list(request, template_name):
     '''显示货运列表'''
  #   ship_obj_list = Shiping.objects.all(is_ship=1)
-    return render(request, template_name)
+    foreign_ship = ForeignShip.objects.all()
+    return render(request, template_name, {"foreign_ship": foreign_ship})
 
 def ship_data(request):
-    ship_obj_list = Shiping.objects.all(is_ship=1)
-    back_data = [i.toDICT for i in ship_obj_list]
+    '''获取ship的datatables信息'''
+    ship_obj_list = Shiping.objects.all()
+    back_data = [i.toDICT() for i in ship_obj_list]
     return ajax_success(back_data)
+
+def add_ship_info(request, ship_nu):
+    '''接收ship的post信息，并保存'''
+    try:
+        ship_obj = Shiping.objects.get(pk=ship_nu)
+    except Shiping.DoesNotExist:
+        raise Http404
+    foreign_ship = ForeignShip.objects.get(name=request.POST.get("foreign_ship"))
+    data = {}
+    for key, val in request.POST.items():
+        data[key] = val
+    data["foreign_ship"] = foreign_ship
+    [setattr(ship_obj, key, val) for key, val in data.items()]
+    ship_obj.save()
+    return ajax_success()
+

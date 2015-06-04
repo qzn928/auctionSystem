@@ -9,5 +9,6 @@ urlpatterns = patterns('auctionweb.shiping.views',
     url(r'^jsondata/unshipped/$', "unshipped_data", name="unshipped_data"),
     url(r'^jsondata/ship/$', "ship_data", name="ship_data"),
     url(r'^create/ship/', "create_ship", name="create_ship"),
+    url(r'^ship/info/(?P<ship_nu>\d+)/$', "add_ship_info", name="add_ship_info"),
     url(r'^ship/list/$', "ship_list", {"template_name":"auctionweb/shiping/ship_list.html"}, name="ship_list")
 )

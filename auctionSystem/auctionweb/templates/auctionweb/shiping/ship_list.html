@@ -58,33 +58,49 @@
           <div class="modal-body">
                 <div class="form-body" style="padding-bottom:0px">
                     <div class="form-group">
-                        <label class="col-sm-3 control-label">地接公司</label>
+                        <label class="col-sm-3 control-label">国外货运公司</label>
                         <div class="col-sm-9"> 
-                            <select id="delivery_company" name="delivery_company" class="form-control">
-                                {% for delivery in delivery_obj %}
-                                    <option>{{delivery.name}}</option>
+                            <select id="foreign_ship" name="foreign_ship" class="form-control">
+                                {% for fship in foreign_ship %}
+                                    <option>{{fship.name}}</option>
                                 {% endfor %}
                             </select>
                         </div>
                     </div>
                     <div class="form-group">
-                        <label class="col-sm-3 control-label">清关公司</label>
+                        <label class="col-sm-3 control-label">主单号</label>
                         <div class="col-sm-9"> 
-                            <select id="clearance_company" name="clearance_company" class="form-control">
-                                {% for clear in clearance_obj %}
-                                <option>{{clear.name}}</option>
-                                {% endfor %}
-                            </select>
+                            <input id="master_nu" name="master_nu" class="form-control" type="text"/>
                         </div>
                     </div>
                     <div class="form-group">
-                        <label class="col-sm-3 control-label">到港</label>
+                        <label class="col-sm-3 control-label">分单号</label>
                         <div class="col-sm-9"> 
-                            <select id="harbour" name="harbour" class="form-control">
-                                {% for har in harbour %}
-                                <option>{{har.name}}</option>
-                                {% endfor %}
-                            </select>
+                            <input id="branch_nu" name="branch_nu" class="form-control" type='text'/>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-3 control-label">件数</label>
+                        <div class="col-sm-9"> 
+                            <input id="ship_num" name="ship_num" class="form-control" type='text'/>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-3 control-label">计费重量</label>
+                        <div class="col-sm-9"> 
+                            <input id="charge_weight" name="charge_weight" class="form-control" type='text'/>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-3 control-label">起飞日期</label>
+                        <div class="col-sm-9"> 
+                            <input id="takeoff_time" name="takeoff_time" class="form-control" type='text'/>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-3 control-label">落地日期</label>
+                        <div class="col-sm-9"> 
+                            <input id="arrive_time" name="arrive_time" class="form-control" type='text'/>
                         </div>
                     </div>
                 </div>
@@ -107,67 +123,35 @@
             "searching": true,
             "sDom": '<"toolsbar"><"H"TfrC>t<"F"ip>',
             "oTableTools":{
+                "sRowSelect": "single",
                 "aButtons":[
                     {
                         "sExtends": "text",
-                        "sButtonText": "add company",
+                        "sButtonText": "add info",
                         "fnClick": function(nButton, oConfig, oFlash){
-                            var ott = usinvoice.row(".selected")
+                            var ott = ship.row(".selected")
                             if(ott.length<1){
-                                alert("至少选择一列!")
+                                alert("请选择一行进行添加!!!")
                             }else{
-                                var ott = usinvoice.rows(".selected");
-                                var invoice_id_arr = [];
-                                $.each(ott.data(), function(i, n){
-                                    invoice_id_arr.push(n.id)
-                                })
                                 $("#shipModal").modal();
+                                console.log(ott.data())
+                                var select_ship_id = ott.data().id;
+                                console.log(select_ship_id)
                                 $("#addShipForm").ajaxForm({
-                                    url: "{% url 'add_ship_com' %}",
-                                    data: {"invoice_id_list": JSON.stringify(invoice_id_arr)},
+                                    type: "post",
+                                    url: "/shiping/ship/info/"+select_ship_id+"/",
                                     success: function(data){
                                         if (!data.success){
                                             alert("failed!!!")
-                                        }else{
-                                            $("#shipModal").find("button[data-dismiss]").trigger("click");
-                                            usinvoice.ajax.reload();
+                                            return
                                         }
+                                        ship.ajax.reload()
+                                        $("#shipModal").find("button[data-dismiss]").trigger("click")
                                     }
                                 })
+                               // var ott = usinvoice.rows(".selected");
                             }
                             
-                        }
-                    },{
-                        "sExtends": "text",
-                        "sButtonText": "create shipping",
-                        "fnClick": function(nButton, oConfig, oFlash){
-                            var ott = usinvoice.row(".selected")
-                            if(ott.length<1){
-                                alert("至少选择一列!")
-                            }else{
-                                var ott = usinvoice.rows(".selected")
-                                var clearance = [];//清关公司
-                                var delivery = []; //地接公司
-                                var harbour = []; //港口
-                                var peel = []; // 削皮场
-                                var invoice_id_arr = [];
-                                $.each(ott.data(), function(i, n){
-                                    clearance.push(n.clearance_company);
-                                    delivery.push(n.delivery_company);
-                                    harbour.push(n.harbour);
-                                    peel.push(n.peel);
-                                    invoice_id_arr.push(n.id);
-                                })
-                                if ($.unique(clearance).length!==1 && $.unique(delivery).length!=1 && $.unique(harbour)!=1 && $.unique(peel)!==1){
-                                    alert("清关公司、削皮场、地接公司、港口相同才能生成同一货运!!!");
-                                    return 
-                                }
-                                $.post("{% url "create_ship" %}", 
-                                    {"invoice_id_list":JSON.stringify(invoice_id_arr), "csrfmiddlewaretoken": $("{%csrf_token%}").val()},
-                                    function(data){
-                                        console.log(data)
-                                    })
-                            }
                         }
                     }
                 ]
@@ -176,7 +160,7 @@
             "columns":[
                 {"data": "shiping_nu"},
                 {"data": "auction_date"},
-                {"data": "com_sum"},
+                {"data": "com_num"},
                 {"data": "invoice_count"},
                 {"data": "foreign_ship"},
                 {"data": "delivery"},
@@ -187,7 +171,7 @@
                 {"data": "charge_weight"},
                 {"data": "takeoff_time"},
                 {"data": "arrive_time"},
-                {"data": "null"},
+                {"data": null},
             ]
         })
         // 根据checkbox 选中列
