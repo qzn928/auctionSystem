@@ -35,20 +35,24 @@ def get_classify_data(request):
     '''获取peelfield页列表信息'''
     back_data = {}
     all_invoice_obj = Invoice.objects.exclude(is_pre=1)
+    print all_invoice_obj
     for v in all_invoice_obj:
-        data = {}
-        commodity_info = v.get_commodity_info()
-        com_obj = commodity_info.get("commodity")
-        peel_id = com_obj.peel_field.pk
-        data["auction"] = com_obj.auction.name
-        data["peel_inform"] = com_obj.peel_inform.name
-        data["peel_price"] = commodity_info.get("peel_price")
-        data["peel_status"] = v.get_peel_status
-        data.update(v.toDICT())
-        if peel_id in back_data:
-            back_data[peel_id].append(data)
-        else:
-            back_data[peel_id] = [data]
+        try:
+            data = {}
+            commodity_info = v.get_commodity_info()
+            com_obj = commodity_info.get("commodity")
+            peel_id = com_obj.peel_field.pk
+            data["auction"] = com_obj.auction.name
+            data["peel_inform"] = com_obj.peel_inform.name
+            data["peel_price"] = commodity_info.get("peel_price")
+            data["peel_status"] = v.get_peeltime_status
+            data.update(v.toDICT())
+            if peel_id in back_data:
+                back_data[peel_id].append(data)
+            else:
+                back_data[peel_id] = [data]
+        except Exception, e:
+            print str(e)
     return ajax_success(back_data)
 
 def get_invoice_data(request):

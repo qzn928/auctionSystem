@@ -98,6 +98,8 @@ class ForeignShip(models.Model):
     '''国外货运'''
     # 公司名称
     name = models.CharField(max_length=50, unique=True)
+    # 货币种类
+    currency = models.CharField(max_length=50)
     def __str__(self):
         return self.name
 
@@ -105,16 +107,12 @@ class Shiping(models.Model):
     '''货运表'''
     # 货运号
     shiping_nu = models.CharField(max_length=20) 
-    # 拍卖日期
-    auction_date = models.DateField()
     # 货物数量
     com_num = models.IntegerField()
+    # 国外货运公司
+    foreign_ship = models.ForeignKey(ForeignShip, null=True)
     # 发票总额
     invoice_count = models.FloatField()
-    # 国外货运公司
-    foreign_ship =  models.ForeignKey(ForeignShip, null=True)
-    # 地接公司
-    delivery = models.ForeignKey(Delivery)
     # 货运单发票号
     invoice_nu = models.CharField(max_length=20, null=True)
     # 地接费用
@@ -123,8 +121,6 @@ class Shiping(models.Model):
     proxy_fee = models.FloatField(null=True)
     # 总费用
     total_fee = models.FloatField(null=True)
-    # 清关公司
-    clearance_company = models.ForeignKey(Clearance)
     # 主单号
     master_nu = models.CharField(max_length=50, null=True)
     # 分单号
@@ -147,11 +143,35 @@ class Shiping(models.Model):
         o_count = cls.objects.all().count()
         return flag_str + str(o_count+1)
 
+    @property
+    def get_ship_status(self):
+        now = datetime.datetime.now()
+        date = datetime.date(now.year, now.month, now.day)
+        if not self.takeoff_time:
+            return ''
+        if date<self.takeoff_time:
+            status = "货未发"
+        elif self.takeoff_time<=date<self.arrive_time:
+            status = "运输途中"
+        else:
+            status = "已到港"
+        return status
+        
     def toDICT(self):
         ship_list = []
         fields = [f.name for f in self._meta.fields]
+        invoice_list = self.invoice_set.all()
+        if invoice_list:
+            auction_date = invoice_list[0].get_commodity_info()\
+                .get("commodity").auction_time.strftime("%Y-%m-%d")
+            ship_list.extend([
+                ("clearance_company", invoice_list[0].clearance_company.name),
+                ("delivery_company", invoice_list[0].delivery_company.name),
+                ("harbour", invoice_list[0].harbour.name),
+                ("auction_date", auction_date),
+            ])
         for field in fields:
-            if field in ["foreign_ship", "clearance_company", "delivery"]:
+            if field in ["foreign_ship"]:
                 try:
                     ship_list.append((field, getattr(getattr(self, field), "name")))
                 except AttributeError:
@@ -220,17 +240,20 @@ class Invoice(models.Model):
         return flag_str + str(o_count+1)
     
     @property
-    def get_peel_status(self):
+    def get_peeltime_status(self):
         now = datetime.datetime.now()
         date = datetime.date(now.year, now.month, now.day)
-        if date<self.peel_time:
-            status = "为下缸"
-        elif self.peel_time<date<self.out_peel_time:
-            status = "已下缸未完成"
-        elif self.out_peel_time<date<self.delivery_time:
-            status = "已完成未发货"
-        else:
-            status = "已发货"
+        try:
+            if date<self.peel_time:
+                status = "未下缸"
+            elif self.peel_time<date<self.out_peel_time:
+                status = "已下缸未完成"
+            elif self.out_peel_time<date<self.delivery_time:
+                status = "已完成未发货"
+            else:
+                status = "已发货"
+        except:
+            return ""
         return status
 
     def toDICT(self):
@@ -243,6 +266,11 @@ class Invoice(models.Model):
             elif field in ["clearance_company", "delivery_company", "harbour"]:
                 try:
                     invoice_data.append((field, getattr(getattr(self, field), "name")))
+                except AttributeError:
+                    invoice_data.append((field, ''))
+            elif field == "ship":
+                try:
+                    invoice_data.append((field, getattr(getattr(self, field), "ship_nu")))
                 except AttributeError:
                     invoice_data.append((field, ''))
             elif field in ["peel_time", "out_peel_time", "delivery_time"] and field_val:

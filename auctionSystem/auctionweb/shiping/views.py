@@ -50,16 +50,13 @@ def create_ship(request):
     invoice_id_list = json.loads(request.POST.get("invoice_id_list"))
     ship_invoice_obj = Invoice.objects.filter(id__in=invoice_id_list)
     goods_sum = ship_invoice_obj.aggregate(goods_nu_sum=Sum("goods_nu"),cost_sum=Sum("cost_sum"))
-    auction_date = ship_invoice_obj[0].get_commodity_info().get("commodity").auction_time
-    ship_obj = Shiping(
+    ship_obj = Shiping.objects.create(
         shiping_nu=Shiping.get_last_nu(),
         com_num=goods_sum.get("goods_nu_sum"),
         invoice_count=goods_sum.get("cost_sum"),
-        auction_date=auction_date,
-        delivery=ship_invoice_obj[0].delivery_company,
-        clearance_company=ship_invoice_obj[0].clearance_company,
-    ).save()
-    ship_invoice_obj.update(is_ship=1)
+    )
+    ship_invoice_obj.update(is_ship=1, ship=ship_obj)
+    ship_obj.save()
     return ajax_success()
 
 
@@ -72,7 +69,11 @@ def ship_list(request, template_name):
 def ship_data(request):
     '''获取ship的datatables信息'''
     ship_obj_list = Shiping.objects.all()
-    back_data = [i.toDICT() for i in ship_obj_list]
+    back_data = []
+    for ship_obj in ship_obj_list:
+        data = ship_obj.toDICT()
+        data.update({"status": ship_obj.get_ship_status})
+        back_data.append(data)
     return ajax_success(back_data)
 
 def add_ship_info(request, ship_nu):
@@ -90,3 +91,48 @@ def add_ship_info(request, ship_nu):
     ship_obj.save()
     return ajax_success()
 
+def ship_invoice(request, ship_nu):
+    '''获取货运发票详情'''
+    try:
+        ship_obj = Shiping.objects.get(pk=ship_nu)
+    except Shiping.DoesNotExist:
+        raise Http404
+    invoice_obj = ship_obj.invoice_set.all()
+    print invoice_obj
+    back_data = []
+    for invo in invoice_obj:
+        data = {}
+        com_obj = invo.get_commodity_info().get("commodity")
+        data["auction"] = com_obj.auction.name
+        data["customer_id"] = com_obj.customer_id
+        data["invoice_nu"] = invo.invoice_nu
+        data["goods_num"] = invo.goods_nu
+        data["invoice_count"] = invo.cost_sum
+        back_data.append(data)
+    return ajax_success(back_data)
+
+def unpaid_list(request, template_name):
+    '''未付款货运清单'''
+    return render(request, template_name, {})
+
+def unpaid_data(request):
+    '''unpaid ship datatables data'''
+    ship_obj_list = Shiping.objects.all()
+    back_data = [i.toDICT() for i in ship_obj_list]
+    return ajax_success(back_data)
+
+def add_ship_fee(request, ship_nu):
+    try:
+        ship_obj = Shiping.objects.get(pk=ship_nu)
+    except Shiping.DoesNotExist:
+        raise Http404
+    invoice_nu = request.POST.get("invoice_nu") # 货运单发票号
+    total_fee = request.POST.get("total_fee") # 运费总金额
+    delivery_fee = request.POST.get("delivery_fee") # 地接费
+    proxy_fee = request.POST.get("proxy_fee") # 代理费
+    ship_obj.invoice_nu = invoice_nu
+    ship_obj.total_fee = total_fee
+    ship_obj.delivery_fee = delivery_fee
+    ship_obj.proxy_fee = proxy_fee
+    ship_obj.save()
+    return ajax_success()

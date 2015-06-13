@@ -1,0 +1,143 @@
+{% extends "auctionweb/layout.html" %}
+{% block header_js %}
+    <style>
+        .ceTable{text-align:center}
+    </style>
+{% endblock%}
+{% block content %}
+<div class="portlet box green">
+    <div class="portlet-title">
+        <div class="caption">
+            <i class="fa fa-gift"></i>
+            Unpaid Ship Items
+        </div>
+        <div class="tools hidden-xs">
+            <a href="javascript:;" class="collapse">
+            </a>
+        </div>
+    </div>
+    <div class="portlet-body">
+        <table class="display" id="unpaidShip" cellspacing="0" width="100%">
+            <thead>
+                <tr>
+                    <th><span>货运公司</span></th>
+                    <th><span>拍卖会日期</span></th>
+                    <th><span>运单号</span></th>
+                    <th><span>到港口</span></th>
+                    <th><span>数量</span></th>
+                    <th><span>计费重量</span></th>
+                    <th><span>货运单发票号</span></th>
+                    <th><span>运费总金额</span></th>
+                    <th><span>地接费</span></th>
+                    <th><span>代理费</span></th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+</div>
+
+{% endblock %}
+<!-- Modal -->
+{% block footer_block %}
+<style>
+.modal-backdrop{z-index:0;}
+</style>
+<div class="modal fade" id="shipFeeModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="myModalLabel">添加货运费用</h4>
+      </div>
+        <form class="form-horizontal" role="form" id="addShipFee" method="POST"> 
+          {% csrf_token %}
+          <div class="modal-body">
+                <div class="form-body" style="padding-bottom:0px">
+                    <div class="form-group">
+                        <label class="col-sm-3 control-label">货运单发票号</label>
+                        <div class="col-sm-9"> 
+                            <input id="master_nu" name="invoice_nu" class="form-control" type="text"/>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-3 control-label">运费总金额</label>
+                        <div class="col-sm-9"> 
+                            <input id="branch_nu" name="total_fee" class="form-control" type='text'/>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-3 control-label">地接费</label>
+                        <div class="col-sm-9"> 
+                            <input id="ship_num" name="delivery_fee" class="form-control" type='text'/>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-3 control-label">代理费</label>
+                        <div class="col-sm-9"> 
+                            <input id="charge_weight" name="proxy_fee" class="form-control" type='text'/>
+                        </div>
+                    </div>
+                </div>
+          </div>
+          <div class="modal-footer">
+            <button type="submit" class="btn btn-primary" id="shipSubmit">Save</button>
+            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+          </div>
+        </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block footer_js %}
+    <script type="text/javascript">
+        var unpaid_ship = $("#unpaidShip").DataTable({
+            "searching": true,
+            "sDom": '<"toolsbar"><"H"TfrC>t<"F"ip>',
+            "oTableTools":{
+                "sRowSelect": "single",
+                "aButtons":[
+                    {
+                        "sExtends": "text",
+                        "sButtonText": "add fee",
+                        "fnClick": function(nButton, oConfig, oFlash){
+                            var ott = TableTools.fnGetInstance("unpaidShip");
+                            var selectAtrs = ott.fnGetSelectedData();
+                            if(selectAtrs.length<1){
+                                alert("至少选择一行进行操作")
+                                return false
+                            };
+                            $modal = $("#shipFeeModal");
+                            $modal.modal();
+                            $("#addShipFee").ajaxForm({
+                                url: "/shiping/add/fee/"+selectAtrs[0].id+"/",
+                                success: function(data){
+                                    if (!data.success){
+                                        alert("failed!!!")
+                                    }else{
+                                        unpaid_ship.ajax.reload();
+                                        $("#shipFeeModal").find("button[data-dismiss]").trigger("click")
+                                    }
+                                }
+                            })
+                        }
+                    }
+                 ]
+            },
+            "ajaxSource":"{% url 'unpaid_data' %}",
+            "columns":[
+                {"data": "delivery_company"},
+                {"data": "auction_date"},
+                {"data": "master_nu"},
+                {"data": "harbour"},
+                {"data": "com_num"},
+                {"data": "charge_weight"},
+                {"data": "invoice_nu"},
+                {"data": "total_fee"},
+                {"data": "delivery_fee"},
+                {"data": "proxy_fee"},
+            ]
+        })
+    </script>
+{% endblock %}
+{% block navname %}shipping{% endblock %}
+

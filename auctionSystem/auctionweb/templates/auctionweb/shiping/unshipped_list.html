@@ -162,7 +162,13 @@
                                 $.post("{% url "create_ship" %}", 
                                     {"invoice_id_list":JSON.stringify(invoice_id_arr), "csrfmiddlewaretoken": $("{%csrf_token%}").val()},
                                     function(data){
-                                        console.log(data)
+                                        if (!data.success){
+                                            alert("failed!!!")
+                                        }else{
+                                            alert("success!!!")
+                                            usinvoice.ajax.reload();
+                                        }
+                                        
                                     })
                             }
                         }

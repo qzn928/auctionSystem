@@ -127,7 +127,7 @@
                                         if(data.success){
                                             alert("successfully!!!")
                                             $("#timeModal").find("button[data-dismiss]").trigger("click")
-                                            $("#peel"+peel_id).ajax.reload();
+                                            $(this).ajax.reload();
                                         }else{
                                             alert("failed!!!")
                                         }

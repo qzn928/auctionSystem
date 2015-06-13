@@ -102,7 +102,7 @@
                     if (data.success){
                         alert("create successfully!!!")
                         $("#paddModal").find("button[data-dismiss]").trigger("click")
-
+                        dressInvoice.ajax.reload()
                     }else{
                         alert(data.error_message)
                     }

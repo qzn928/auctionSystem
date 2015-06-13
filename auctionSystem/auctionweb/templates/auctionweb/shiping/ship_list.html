@@ -113,12 +113,47 @@
     </div>
   </div>
 </div>
+<div class="modal fade" id="invoiceModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="myModalLabel">货运相关的发票信息</h4>
+      </div>
+      <table style="margin-bottom:20px" class="display" id="invoice" cellspacing="0" width="100%">
+        <thead>
+          <tr>
+            <th><span>拍卖会</span></th>
+            <th><span>Invoice No</span></th>
+            <th><span>Customer No</span></th>
+            <th><span>数量</span></th>
+            <th><span>原始发票金额</span></th>
+          </tr>
+        </thead>
+      </table>
+    </div>
+  </div>
+</div>
 {% endblock %}
 {% block footer_js %}
     <script type="text/javascript">
         $("#delivery_company").select2();
         $("#clearance_company").select2();
         $("#harbour").select2();
+        function create_in_table(ship_nu){
+            var invoice = $("#invoice").DataTable({
+                "paging": false,
+                "searching": false,
+                "ajaxSource":"/shiping/invoice/"+ship_nu+"/",
+                "columns": [
+                    {"data": "auction"},
+                    {"data": "invoice_nu"},
+                    {"data": "customer_id"},
+                    {"data": "goods_num"},
+                    {"data": "invoice_count"},
+                ]
+            })
+        }
         var ship = $("#ship").DataTable({
             "searching": true,
             "sDom": '<"toolsbar"><"H"TfrC>t<"F"ip>',
@@ -130,13 +165,11 @@
                         "sButtonText": "add info",
                         "fnClick": function(nButton, oConfig, oFlash){
                             var ott = ship.row(".selected")
-                            if(ott.length<1){
+                            if(ott.length!=1){
                                 alert("请选择一行进行添加!!!")
                             }else{
                                 $("#shipModal").modal();
-                                console.log(ott.data())
                                 var select_ship_id = ott.data().id;
-                                console.log(select_ship_id)
                                 $("#addShipForm").ajaxForm({
                                     type: "post",
                                     url: "/shiping/ship/info/"+select_ship_id+"/",
@@ -149,7 +182,20 @@
                                         $("#shipModal").find("button[data-dismiss]").trigger("click")
                                     }
                                 })
-                               // var ott = usinvoice.rows(".selected");
+                            }
+                            
+                        }
+                    },{
+                        "sExtends": "text",
+                        "sButtonText": "view",
+                        "fnClick": function(nButton, oConfig, oFlash){
+                            var ott = ship.row(".selected")
+                            if(ott.length!=1){
+                                alert("请选择一行进行查看!!!")
+                            }else{
+                                $("#invoiceModal").modal();
+                                $("#invoice").DataTable().destroy();
+                                create_in_table(ott.data().id);
                             }
                             
                         }
@@ -163,7 +209,7 @@
                 {"data": "com_num"},
                 {"data": "invoice_count"},
                 {"data": "foreign_ship"},
-                {"data": "delivery"},
+                {"data": "delivery_company"},
                 {"data": "clearance_company"},
                 {"data": "master_nu"},
                 {"data": "branch_nu"},
@@ -171,7 +217,7 @@
                 {"data": "charge_weight"},
                 {"data": "takeoff_time"},
                 {"data": "arrive_time"},
-                {"data": null},
+                {"data": "status"},
             ]
         })
         // 根据checkbox 选中列
