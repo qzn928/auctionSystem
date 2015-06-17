@@ -140,6 +140,8 @@
         $("#delivery_company").select2();
         $("#clearance_company").select2();
         $("#harbour").select2();
+        $("#takeoff_time").datepicker({dateFormat: "yy-mm-dd"});
+        $("#arrive_time").datepicker({dateFormat: "yy-mm-dd"});
         function create_in_table(ship_nu){
             var invoice = $("#invoice").DataTable({
                 "paging": false,

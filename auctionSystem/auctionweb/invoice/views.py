@@ -71,7 +71,6 @@ def voadd(request, template_name):
             "customer_id": post_data.get("customer_id"),
             "begin_exchange_rate": new_rate,
             "invoice_nu": invoice_nu,
-            "goods_type": "ccc",
             "goods_nu": 100,
             "dollar_sum": 3000,
             "cost_sum": 2000,

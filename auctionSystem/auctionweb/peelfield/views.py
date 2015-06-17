@@ -35,7 +35,7 @@ def get_classify_data(request):
     '''获取peelfield页列表信息'''
     back_data = {}
     all_invoice_obj = Invoice.objects.exclude(is_pre=1)
-    print all_invoice_obj
+    args_pid = request.GET.get("peel_id")
     for v in all_invoice_obj:
         try:
             data = {}
@@ -48,11 +48,13 @@ def get_classify_data(request):
             data["peel_status"] = v.get_peeltime_status
             data.update(v.toDICT())
             if peel_id in back_data:
-                back_data[peel_id].append(data)
+                back_data[str(peel_id)].append(data)
             else:
-                back_data[peel_id] = [data]
+                back_data[str(peel_id)] = [data]
         except Exception, e:
             print str(e)
+    if args_pid:
+        back_data = back_data.get(str(args_pid))
     return ajax_success(back_data)
 
 def get_invoice_data(request):

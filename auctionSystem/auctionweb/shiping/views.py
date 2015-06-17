@@ -37,8 +37,12 @@ def unshipped_data(request):
         data = {}
         commodity_info = v.get_commodity_info()
         com_obj = commodity_info.get("commodity")
-        peel_name = com_obj.peel_field.name
-        data["peel_name"] = peel_name
+        try:
+            peel_name = com_obj.peel_field.name
+        except AttributeError:
+            data["peel_name"] = ''
+        else:
+            data["peel_name"] = peel_name
         data["auction"] = com_obj.auction.name
         data["customer_no"] = com_obj.customer_id
         data.update(v.toDICT())
@@ -122,6 +126,7 @@ def unpaid_data(request):
     return ajax_success(back_data)
 
 def add_ship_fee(request, ship_nu):
+    '''添加货运付费详情'''
     try:
         ship_obj = Shiping.objects.get(pk=ship_nu)
     except Shiping.DoesNotExist:
@@ -136,3 +141,20 @@ def add_ship_fee(request, ship_nu):
     ship_obj.proxy_fee = proxy_fee
     ship_obj.save()
     return ajax_success()
+
+def ship_classify(request, template_name):
+    '''货运分类显示关于各公司的付账情况'''
+    foreign_ship = ForeignShip.objects.all()
+    return render(request, template_name, {"foreign_ship": foreign_ship})
+
+def classify_data(request):
+    '''分类显示货运数据'''
+    back_data = {}
+    ship_obj = Shiping.objects.filter(is_paid_fship=0)
+    for ship in ship_obj:
+        data = ship.toDICT()
+        if data.get("foreign_ship") in back_data:
+            back_data[data.get("foreign_ship")].append(data)
+        else:
+            back_data[data.get("foreign_ship")] = [data]
+    return ajax_success(back_data)

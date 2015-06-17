@@ -25,7 +25,7 @@ class Variety(models.Model):
     货物品种
     """
     # 品种名称
-    name = models.CharField(max_length=50)
+    name = models.CharField(max_length=50, unique=True)
     auction = models.ManyToManyField(AuctionField)   
     def __str__(self):
         return self.name
@@ -115,6 +115,10 @@ class Shiping(models.Model):
     invoice_count = models.FloatField()
     # 货运单发票号
     invoice_nu = models.CharField(max_length=20, null=True)
+    # 地接发票号
+    deliv_invoice_nu = models.CharField(max_length=20, null=True)
+    # 代理发票号
+    proxy_invoice_nu = models.CharField(max_length=20, null=True)
     # 地接费用
     delivery_fee = models.FloatField(null=True)
     # 代理费用
@@ -133,6 +137,13 @@ class Shiping(models.Model):
     takeoff_time = models.DateField(null=True)
     #落地日期
     arrive_time = models.DateField(null=True)
+    # 标志货运是否付款
+    is_paid_fship = models.IntegerField(default=0)
+    # 标志地接是否付款
+    is_paid_deliv = models.IntegerField(default=0)
+    #标志代理是否付款
+    is_paid_proxy = models.IntegerField(default=0)
+
 
     def __str__(self):
         return self.shiping_nu
@@ -170,6 +181,13 @@ class Shiping(models.Model):
                 ("harbour", invoice_list[0].harbour.name),
                 ("auction_date", auction_date),
             ])
+        if self.total_fee:
+            ship_list.extend([
+                ("avg_num", "%.2f"%(self.total_fee/len(invoice_list))),
+                ("avg_weight", "%.2f"%(self.total_fee/self.charge_weight))
+            ])
+        else:
+            ship_list.extend([("avg_weight", ''), ("avg_num", '')])
         for field in fields:
             if field in ["foreign_ship"]:
                 try:
@@ -191,8 +209,6 @@ class Invoice(models.Model):
     invoice_nu = models.CharField(max_length=20) 
     # 客户号
     customer_id = models.CharField(max_length=20) 
-    # 品种
-    goods_type = models.CharField(max_length=50) 
     # 数量
     goods_nu = models.IntegerField() 
     # 美金总额
@@ -246,9 +262,9 @@ class Invoice(models.Model):
         try:
             if date<self.peel_time:
                 status = "未下缸"
-            elif self.peel_time<date<self.out_peel_time:
+            elif self.peel_time<=date<self.out_peel_time:
                 status = "已下缸未完成"
-            elif self.out_peel_time<date<self.delivery_time:
+            elif self.out_peel_time<=date<self.delivery_time:
                 status = "已完成未发货"
             else:
                 status = "已发货"
@@ -259,6 +275,8 @@ class Invoice(models.Model):
     def toDICT(self):
         invoice_data = []
         fields = [f.name for f in self._meta.fields]
+        commoditys = ','.join(set([com.types for com in self.commodity_set.all()]))
+        invoice_data.append(("goods_type", commoditys))
         for field in fields:
             field_val = getattr(self, field)
             if field == "modify_date" and field_val:

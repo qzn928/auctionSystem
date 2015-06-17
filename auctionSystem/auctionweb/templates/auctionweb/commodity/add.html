@@ -59,7 +59,7 @@
    <script src="/static/assets/admin/pages/scripts/form-wizard.js" type="text/javascript"></script>
     <script>
         $("#addForm").find("input").addClass("form-control")
-
+        $("#id_auction_time").datepicker({dateFormat: "yy-mm-dd"}) // auction_time 绑定时间插件
         //复制表单
         $("#copyForm").on("click", function(){
             $.getJSON("{% url 'aform' %}", function(data){

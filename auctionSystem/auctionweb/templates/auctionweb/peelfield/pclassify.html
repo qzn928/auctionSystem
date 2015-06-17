@@ -98,8 +98,12 @@
 {% endblock %}
 {% block footer_js %}
     <script type="text/javascript">
+        $("#peel_time").datepicker({"dateFormat": "yy-mm-dd"})
+        $("#out_peel_time").datepicker({"dateFormat": "yy-mm-dd"})
+        $("#delivery_time").datepicker({"dateFormat": "yy-mm-dd"});
+        var peel_tabs = {};
         function peeltable(peel_id, list_data){
-             $("#peel"+peel_id).DataTable({
+             peel_tabs["peel"+peel_id] = $("#peel"+peel_id).DataTable({
                 "searching": false,
                 "info": false,
                 "paging": false,
@@ -127,7 +131,8 @@
                                         if(data.success){
                                             alert("successfully!!!")
                                             $("#timeModal").find("button[data-dismiss]").trigger("click")
-                                            $(this).ajax.reload();
+                                            var url_str = "{% url 'cpdata' %}?peel_id="+peel_id+"";
+                                            peel_tabs["peel"+peel_id].ajax.url(url_str).load();
                                         }else{
                                             alert("failed!!!")
                                         }
@@ -151,12 +156,15 @@
                 ]
             })
        }
-       $.getJSON("{% url 'cpdata' %}", function(data){
-            $.each(data.data, function(i, n){
-                console.log(i)
-                peeltable(i, n)
-            })
-       })
+       function init_data(){
+           $.getJSON("{% url 'cpdata' %}", function(data){
+                $.each(data.data, function(i, n){
+                    console.log(i)
+                    peeltable(i, n)
+                })
+           })
+       }
+       init_data()
        //绑定toggle事件
        $(".peelToggle").on("click", function(){
             $(this).next().toggle()

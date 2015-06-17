@@ -14,7 +14,6 @@ class InvoiceForm(forms.ModelForm):
         fields = (
             "invoice_nu",
             "customer_id",
-            "goods_type",
             "goods_nu",
             "dollar_sum",
             "cost_sum",
