@@ -150,7 +150,7 @@ def ship_classify(request, template_name):
 def classify_data(request):
     '''分类显示货运数据'''
     back_data = {}
-    ship_obj = Shiping.objects.filter(is_paid_fship=0)
+    ship_obj = Shiping.objects.all()
     for ship in ship_obj:
         data = ship.toDICT()
         if data.get("foreign_ship") in back_data:
@@ -158,3 +158,29 @@ def classify_data(request):
         else:
             back_data[data.get("foreign_ship")] = [data]
     return ajax_success(back_data)
+
+def to_pay_shiping(request):
+    '''货运分类付费'''
+    # 类别
+    com_pro = request.GET.get("company")
+    com_id = request.GET.get("idl")
+    credit_note = request.POST.get("credit_note")
+    payment = request.POST.get("payment")
+    if not payment:
+        return ajax_error("payment不能为空!!!")
+    if not com_pro or not com_id:
+        return ajax_error("异常请求")
+    if com_pro == "ship":
+        try:
+            ship_obj = ForeignShip.objects.get(id=com_id)
+        except ForeignShip.DoesNotExist:
+            return ajax_error("异常请求")
+        ship_obj.account.balance = ship_obj.account.balance - \
+            int(credit_note) if credit_note else 0 - int(payment)
+        ship_obj.account.save()
+        PaymentOrder(
+            account=ship_obj.account, 
+            credit_note=credit_note if credit_note else '',
+            payment=payment
+        ).save()
+    return ajax_success({"blance": ship_obj.account.balance})

@@ -72,6 +72,7 @@
                 $("#formControl").find("input").addClass("form-control")
                 get_select();
                 $("#id_types").select2({"width": '409px'})
+                $("#id_auction_time").datepicker({dateFormat: "yy-mm-dd"}) // auction_time 绑定时间插件
                 //$('button-previous').trigger('click');
             })
         })
@@ -102,11 +103,11 @@
                 }
                 if (data.success){
                     alert("添加成功")
-                }else{
-                    $("#addForm").empty().html(data.html)
-                    $("#addForm").find("input").addClass("form-control")
-                    $("#id_types").select2({"width": '409px'})
                 }
+                $("#addForm").empty().html(data.html)
+                $("#addForm").find("input").addClass("form-control")
+                $("#id_types").select2({"width": '409px'})
+                $("#id_auction_time").datepicker({dateFormat: "yy-mm-dd"}) // auction_time 绑定时间插件
             }
         })
     </script>

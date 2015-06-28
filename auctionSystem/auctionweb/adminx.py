@@ -62,3 +62,8 @@ class ForeignShipAdmin(object):
     pass
     
 xadmin.site.register(ForeignShip, ForeignShipAdmin)
+
+class AccountAdmin(object):
+    pass
+
+xadmin.site.register(Account, AccountAdmin)

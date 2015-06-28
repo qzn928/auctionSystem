@@ -64,21 +64,20 @@ def get_invoice_data(request):
     return ajax_success(back_list)
 
 def add_peel_field(request, invoice_id):
-    '''添加削皮场和削皮指示, 一张发票相同'''
+    '''添加削皮场和削皮指示'''
     if request.method != "POST":
         raise Http404
     peel_field = request.POST.get("peel_field")
     peel_inform = request.POST.get("peel_inform")
+    lot_id_lis = json.loads(request.POST.get("lot_id_arr"))
     try:
         peel_field_obj = PeelField.objects.get(pk=peel_field)
         peel_inform_obj = PeelInform.objects.get(pk=peel_inform)
-        invoice_obj = Invoice.objects.get(pk=invoice_id)
     except:
         return ajax_error("object does not exist")
-
-    com_obj_list =  invoice_obj.commodity_set.all() 
-    for com_obj in com_obj_list:
-        com_obj.peel_field = peel_field_obj
-        com_obj.peel_inform = peel_inform_obj
-        com_obj.save()
+    com_list = Commodity.objects.filter(id__in=lot_id_lis)
+    for com in com_list:
+        com.peel_field = peel_field_obj
+        com.peel_inform = peel_inform_obj
+        com.save()
     return ajax_success()

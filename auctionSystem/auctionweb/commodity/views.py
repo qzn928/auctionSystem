@@ -33,7 +33,13 @@ def add(request, auction_id, template_name):
             c_obj.auction = auc_obj
             c_obj.save()
             mem.set("last_form", request.POST)
-            return ajax_success({"success": True})
+            cform = CommodityForm()
+            html = render_to_string(
+                "auctionweb/commodity/modform.html",
+                {"cform": cform, "auc_varietys": auc_varietys}, 
+                context_instance=RequestContext(request)
+            )
+            return ajax_success({"success": True, "html": html})
         else:
             html = render_to_string(
                 "auctionweb/commodity/modform.html",
@@ -50,7 +56,6 @@ def change(request, lot_nu, template_name):
     except Commodity.DoesNotExist:
         raise Http404
     if request.method == "POST":
-        print "22222222"
         cform = CommodityForm(request.POST, instance=com_obj)
         if cform.is_valid():
             cform.save()
@@ -74,12 +79,14 @@ def copy_last_form(request, template_name):
         varietys = auc_obj.variety_set.all()
     except AuctionField.DoesNotExist:
         raise Http404
-    print varietys
     mem = memcache.Client(settings.MEMCACHES)
     last_form_data = mem.get(mckeys.COPY_LAST_FORM)
-    copy_form_data = last_form_data.copy()
-    copy_form_data.pop("lot")
-    cform = CommodityForm(copy_form_data)
+    if last_form_data:
+        copy_form_data = last_form_data.copy()
+        copy_form_data.pop("lot")
+        cform = CommodityForm(copy_form_data)
+    else:
+        cform = CommodityForm()
     html = render_to_string(
         template_name,
         {

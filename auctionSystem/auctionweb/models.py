@@ -30,6 +30,15 @@ class Variety(models.Model):
     def __str__(self):
         return self.name
 
+class Account(models.Model):
+    '''
+    账户表
+    '''
+    name = models.CharField(max_length=30, unique=True)
+    balance = models.IntegerField()
+    def __str__(self):
+        return self.name
+
 class Customer(models.Model):
     """客户类"""
     # 客户姓名
@@ -79,9 +88,10 @@ class Clearance(models.Model):
         return self.name
     
 class Delivery(models.Model):
-    '''货运公司'''
-    # 地接公司名字
+    '''地接公司'''
+    # 名称
     name = models.CharField(max_length=50, unique=True)
+    account = models.OneToOneField(Account)
     
     def __str__(self):
         return self.name
@@ -100,8 +110,21 @@ class ForeignShip(models.Model):
     name = models.CharField(max_length=50, unique=True)
     # 货币种类
     currency = models.CharField(max_length=50)
+    account = models.OneToOneField(Account, null=True)
+
     def __str__(self):
         return self.name
+
+class PaymentOrder(models.Model):
+    '''账户还款记录'''
+    # 账户
+    account = models.ForeignKey(Account)
+    # 抵账
+    credit_note = models.IntegerField(null=True)
+    # 还款
+    payment = models.IntegerField()
+    def __str__(self):
+        return self.account.name
 
 class Shiping(models.Model):
     '''货运表'''
@@ -109,16 +132,12 @@ class Shiping(models.Model):
     shiping_nu = models.CharField(max_length=20) 
     # 货物数量
     com_num = models.IntegerField()
+    #货运单发票号
+    invoice_nu = models.CharField(max_length=50, null=True)
     # 国外货运公司
     foreign_ship = models.ForeignKey(ForeignShip, null=True)
     # 发票总额
     invoice_count = models.FloatField()
-    # 货运单发票号
-    invoice_nu = models.CharField(max_length=20, null=True)
-    # 地接发票号
-    deliv_invoice_nu = models.CharField(max_length=20, null=True)
-    # 代理发票号
-    proxy_invoice_nu = models.CharField(max_length=20, null=True)
     # 地接费用
     delivery_fee = models.FloatField(null=True)
     # 代理费用
@@ -137,12 +156,6 @@ class Shiping(models.Model):
     takeoff_time = models.DateField(null=True)
     #落地日期
     arrive_time = models.DateField(null=True)
-    # 标志货运是否付款
-    is_paid_fship = models.IntegerField(default=0)
-    # 标志地接是否付款
-    is_paid_deliv = models.IntegerField(default=0)
-    #标志代理是否付款
-    is_paid_proxy = models.IntegerField(default=0)
 
 
     def __str__(self):
@@ -260,11 +273,11 @@ class Invoice(models.Model):
         now = datetime.datetime.now()
         date = datetime.date(now.year, now.month, now.day)
         try:
-            if date<self.peel_time:
+            if not self.peel_time or date<self.peel_time:
                 status = "未下缸"
-            elif self.peel_time<=date<self.out_peel_time:
+            elif not self.out_peel_time or self.peel_time<=date<self.out_peel_time:
                 status = "已下缸未完成"
-            elif self.out_peel_time<=date<self.delivery_time:
+            elif not self.delivery_time or self.out_peel_time<=date<self.delivery_time:
                 status = "已完成未发货"
             else:
                 status = "已发货"
@@ -314,19 +327,25 @@ class Invoice(models.Model):
     @property
     def get_peel_status(self):
         commodity_list = self.commodity_set.all()
-        status = "未添加削皮指示" 
-        if commodity_list:
-            peel_field = commodity_list[0].peel_field
-            peel_inform = commodity_list[0].peel_inform
+        num = 0
+        for com in commodity_list:
+            peel_field = com.peel_field
+            peel_inform = com.peel_inform
             if peel_field and peel_inform:
-                status = "已添加削皮指示"
+                num += 1
+        if num == 0:
+            status = "未添加削皮指示" 
+        elif num < len(commodity_list):
+            status = "部分已添加削皮指示" 
+        else:    
+            status = "已添加削皮指示"
         return status
 
 class Commodity(models.Model):
     """商品"""
     # 商品lot号
-    lot = models.CharField(max_length=20, unique=True) 
-    # 拍卖下来的日期
+    lot = models.CharField(max_length=20) 
+    # 拍卖日期
     auction_time = models.DateField()
     # 品种
     types = models.CharField(max_length=50) 

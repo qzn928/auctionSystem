@@ -129,8 +129,6 @@
                                     data: {"csrfmiddlewaretoken": $("{%csrf_token%}").val()},
                                     success: function(data){
                                         if(data.success){
-                                            alert("successfully!!!")
-                                            $("#timeModal").find("button[data-dismiss]").trigger("click")
                                             var url_str = "{% url 'cpdata' %}?peel_id="+peel_id+"";
                                             peel_tabs["peel"+peel_id].ajax.url(url_str).load();
                                         }else{

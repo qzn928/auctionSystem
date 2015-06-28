@@ -45,7 +45,7 @@
         <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
         <h4 class="modal-title" id="myModalLabel">添加削皮场</h4>
       </div>
-      <div>
+      <div style="display:none" id="addPeelInform">
          <form class="form-inline" id="submit_form" method="POST" style="margin-top:20px">
             <div class="form-group">
                 <label for="peel_field">削皮场</label>
@@ -80,6 +80,7 @@
             <th><span>清晰度</span></th>
             <th><span>数量</span></th>
             <th><span>评估</span></th>
+            <th><span>削皮指示</span></th>
           </tr>
         </thead>
       </table>
@@ -113,6 +114,44 @@
                 "paging": false,
                 "info": false,
                 "ajaxSource":"/invoice/inlot/"+invoice_id+"",
+                "sDom": '<"toolsbar"><"H"TfrC>t<"F"ip>',
+                "oTableTools":{
+                    "sRowSelect": "multi",
+                    "aButtons":[
+                        {
+                            "sExtends": "text",
+                            "sButtonText": "add peel inform",
+                            "fnClick": function(nButton, oConfig, oFlash){
+                                var ott = TableTools.fnGetInstance("lotTable");
+                                var selectAtrs = ott.fnGetSelectedData();
+                                if (selectAtrs.length<1){
+                                    alert("至少选择一行添加削皮指示");
+                                    return 
+                                }
+                                $("#addPeelInform").css("display", "block")
+                                var lot_id_arr = [];
+                                $.each(selectAtrs, function(i, n){
+                                    lot_id_arr.push(n.id)
+                                    $("#submit_form").ajaxForm({
+                                        url: "/peelfield/add/"+invoice_id+"/",
+                                        data: {
+                                            "csrfmiddlewaretoken": $("{%csrf_token%}").val(),
+                                            "lot_id_arr": JSON.stringify(lot_id_arr)
+                                        },
+                                        success: function(data){
+                                            if (data.success){
+                                                dressInvoice.ajax.reload()
+                                            }else{
+                                                alert(data.error_message)
+                                            }
+                                        }
+                                    })
+                                })
+
+                            }
+                        }
+                    ]
+                },
                 "columns":[
                     {"data": "types"},
                     {"data": "sex"},
@@ -123,6 +162,7 @@
                     {"data": "definition"},
                     {"data": "number"},
                     {"data": "evaluation"},
+                    {"data": "peel_inform"}
                 ]
             })
         }
@@ -146,6 +186,7 @@
                             };
                             $("#paddModal").modal();
                             $("#lotTable").DataTable().destroy()
+                            $("#addPeelInform").css("display", "none")
                             drawTable(selectAtrs[0].id);
                         }
                     }
@@ -160,11 +201,6 @@
                 {"data": "status"},
             ]
         })
-        // 根据checkbox 选中列
-        $("#lotTable").on('click','tr input[name="checkList"]',function(){
-            var $tr =$(this).parents('tr');
-            $tr.toggleClass('selected');
-        }) 
     </script>
 {% endblock %}
 {% block navname %}peelfield{% endblock%}

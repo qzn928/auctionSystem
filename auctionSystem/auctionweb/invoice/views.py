@@ -161,9 +161,9 @@ def add_peel_time(request, invoice_id):
         invoice_obj = Invoice.objects.get(pk=invoice_id)
     except Invoice.DoesNotExist:
         return ajax_error("invoice obj does not exist")
-    invoice_obj.peel_time = request.POST.get("peel_time")
-    invoice_obj.out_peel_time = request.POST.get("out_peel_time")
-    invoice_obj.delivery_time = request.POST.get("delivery_time")
+    data = request.POST.copy()
+    data.pop('csrfmiddlewaretoken')
+    [setattr(invoice_obj, key, val) for key, val in data.items() if val]
     invoice_obj.save()
     return ajax_success()
 
