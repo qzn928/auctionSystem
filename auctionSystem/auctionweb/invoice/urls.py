@@ -15,6 +15,5 @@ urlpatterns = patterns('auctionweb.invoice.views',
     url(r'^cfinvoice/', "create_final_invoice", name="create_final_invoice"),
     url(r'^modify/info/(?P<invoice_id>\d+)/$', "vmodify_info", 
         {"template_name": "auctionweb/invoice/addform.html"}, name="vmodify_info"),
-    url(r'^add/peeltime/(?P<invoice_id>\d+)/$', "add_peel_time", name="add_peel_time"),
     url(r'^add/ship/company/$', "add_ship_com", name="add_ship_com"),
 )

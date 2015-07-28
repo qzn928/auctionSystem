@@ -4,6 +4,7 @@
 {% block header_js %}
     <style>
         .ceTable{text-align:center}
+        .dataTables_wrapper{margin:20px}
     </style>
 {% endblock%}
 {% block content %}
@@ -32,11 +33,15 @@
                         <table id="peel{{peel.id}}" cellspacing="0" width="100%">
                             <thead>
                                 <tr>
+                                    <th><span>lot</span></th>
+                                    <th><span>客户ID</span></th>
                                     <th><span>拍卖会</span></th>
-                                    <th><span>时间</span></th>
                                     <th><span>发票号</span></th>
                                     <th><span>削皮指示</span></th>
                                     <th><span>削皮费</span></th>
+                                    <th><span>品种</span></th>
+                                    <th><span>削皮等级</span></th>
+                                    <th><span>是否签到</span></th>
                                     <th><span>下缸时间</span></th>
                                     <th><span>出缸时间</span></th>
                                     <th><span>发货时间</span></th>
@@ -95,6 +100,28 @@
     </div>
   </div>
 </div>
+<div class="modal fade" id="lotModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="myModalLabel">商品详细信息</h4>
+      </div>
+      <table style="margin-bottom:20px" class="display" id="lotTable" cellspacing="0" width="100%">
+        <thead>
+          <tr>
+            <th><span>品种</span></th>
+            <th><span>性别</span></th>
+            <th><span>LOT号</span></th>
+            <th><span>客户编号</span></th>
+            <th><span>数量</span></th>
+            <th><span>敲锤价</span></th>
+          </tr>
+        </thead>
+      </table>
+    </div>
+  </div>
+</div>
 {% endblock %}
 {% block footer_js %}
     <script type="text/javascript">
@@ -102,6 +129,23 @@
         $("#out_peel_time").datepicker({"dateFormat": "yy-mm-dd"})
         $("#delivery_time").datepicker({"dateFormat": "yy-mm-dd"});
         var peel_tabs = {};
+        function get_invoice_lot(invoice_id){
+            var lotTable = $("#lotTable").DataTable({
+                "searching": false,
+                "info": false,
+                "paging": false,
+             //   "sDom": '<"toolsbar"><"H"TfrC>t<"F"ip>',
+                "ajaxSource":"/invoice/inlot/"+invoice_id+"/",
+                "columns":[
+                      {"data": "types"},
+                      {"data": "sex"},
+                      {"data": "lot"},
+                      {"data": "customer_id"},
+                      {"data": "number"},
+                      {"data": "final_price"},
+                   ]
+            })
+        };
         function peeltable(peel_id, list_data){
              peel_tabs["peel"+peel_id] = $("#peel"+peel_id).DataTable({
                 "searching": false,
@@ -122,10 +166,14 @@
                                     alert("至少选择一行进行操作")
                                     return 
                                 }
-                                var invoice_id = selectAtrs[0].id;
+                                if (selectAtrs[0].peel_time_flag==0){
+                                    alert("未签到不能添加削皮时间")
+                                    return
+                                }
+                                var com_id = selectAtrs[0].id;
                                 $("#addPtimeForm").ajaxForm({
                                     type: "post",
-                                    url: "/invoice/add/peeltime/"+invoice_id+"/",
+                                    url: "/commodity/add/peeltime/"+com_id+"/",
                                     data: {"csrfmiddlewaretoken": $("{%csrf_token%}").val()},
                                     success: function(data){
                                         if(data.success){
@@ -138,15 +186,34 @@
                                 })
                                 $("#timeModal").modal();
                             }
+                        },{
+                            "sExtends": "text",
+                            "sButtonText": "view",
+                            "fnClick": function(nButton, oConfig, oFlash){
+                                var ott = TableTools.fnGetInstance("peel"+peel_id);
+                                var selectAtrs = ott.fnGetSelectedData();
+                                if(selectAtrs.length!=1){
+                                    alert("请选择一行进行操作")
+                                    return 
+                                }
+                                var com_id = selectAtrs[0].id;
+                                $("#lotTable").DataTable().destroy();
+                                get_invoice_lot(com_id);
+                                $("#lotModal").modal()
+                            }
                         }
                       ]
                  },
                 "columns":[
+                    {"data": "lot"},
+                    {"data": "customer_id"},
                     {"data": "auction"},
-                    {"data": "modify_date"},
-                    {"data": "auction_invoice"},
+                    {"data": "invoice"},
                     {"data": "peel_inform"},
                     {"data": "peel_price"},
+                    {"data": "types"},
+                    {"data": "peel_level"},
+                    {"data": "peel_time_flag"},
                     {"data": "peel_time"},
                     {"data": "out_peel_time"},
                     {"data": "delivery_time"},

@@ -153,20 +153,6 @@ def vmodify_info(request, invoice_id, template_name):
     )
     return ajax_success(html=html)
 
-def add_peel_time(request, invoice_id):
-    '''添加发票的削皮场流程时间参数'''
-    if request.method != "POST":
-        raise Http404
-    try:
-        invoice_obj = Invoice.objects.get(pk=invoice_id)
-    except Invoice.DoesNotExist:
-        return ajax_error("invoice obj does not exist")
-    data = request.POST.copy()
-    data.pop('csrfmiddlewaretoken')
-    [setattr(invoice_obj, key, val) for key, val in data.items() if val]
-    invoice_obj.save()
-    return ajax_success()
-
 def add_ship_com(request):
     '''添加发票的货运相关公司'''
     if request.method != "POST":

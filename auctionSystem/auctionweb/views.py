@@ -67,7 +67,6 @@ def login(request, template_name='registration/login.html',
 
             if request.session.test_cookie_worked():
                 request.session.delete_test_cookie()
-
             return HttpResponseRedirect(redirect_to)
     else:
         form = authentication_form(request)

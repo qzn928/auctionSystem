@@ -17,6 +17,23 @@
                         </select>
                     </div>
                  </div>
+                 {% elif field.name == "customer_id" %}
+                 <div class="form-group{% if field.errors %} error{% endif %}">
+                    <label class="control-label col-md-3">{{field.label}} <span class="required">
+                                                        * </span>
+                    </label>
+                    <div class="col-md-4">
+                        <select id="id_customer_id" name="customer_id">
+                            {% for v in customers %}
+                                {% if customers and customer == v.name %}
+                                    <span><option selected>{{v.name}}</option></span>
+                                {% else %}
+                                    <span><option>{{v.name}}</option></span>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
+                    </div>
+                 </div>
                  {% else %}
                  <div class="form-group{% if field.errors %} error{% endif %}">
                     <label class="control-label col-md-3">{{field.label}} <span class="required">

@@ -4,6 +4,7 @@
 {% block header_js %}
 <style>
     .ceTable{text-align:center}
+    .dataTables_wrapper{margin:20px}
 </style>
 {% endblock%}
 {% block content %}
@@ -31,6 +32,9 @@
                 </tr>
             </thead>
         </table>
+        <hr/>
+        <div id="countGraph" style="height:300px;width:70%;margin:0 auto">
+        </div>
     </div>
 </div>
 {% block footer_block %}
@@ -111,50 +115,108 @@
                    ]
             })
         };
-        var finTable = $("#finTable").DataTable({
-            "searching": true,
-            //"info": false,
-           // "paging": false,
-            "sDom": '<"toolsbar"><"H"TfrC>t<"F"ip>',
-            "ajaxSource":"{% url 'fvjson' %}",
-            "oTableTools":{
-                "sRowSelect": "single",
-                "aButtons": [
-                    {
-                        "sExtends": "text",
-                        "sButtonText": "view",
-                        "fnClick": function(nButton, oConfig, oFlash){
-                            var ott = TableTools.fnGetInstance("finTable");
-                            console.log(ott)
-                            var selectAtrs = ott.fnGetSelectedData();
-                            if (selectAtrs.length!=1){
-                                alert("请选择一行进行查看")
-                                return false
-                            }
-                            $("#lotTable").DataTable().destroy();
-                            get_invoice_lot(selectAtrs[0].id)
-                            $("#lotModal").modal()
-                         }
-                    }
+        $.get("{% url 'fvjson' %}", function(data){
+            drawTable(data.data);
+            var customer_list=[], num=0, shengpi_sum=0, dollar_sum=0;
+            for (i in data.data){
+                var one_data = data.data[i];
+                customer_list.push(one_data.customer_id);
+                num += one_data.goods_nu;
+                shengpi_sum += one_data.cost_sum;
+                dollar_sum +=  one_data.dollar_sum;
+            }
+            countDraw([$.unique(customer_list).length, num, shengpi_sum, dollar_sum])
+        }, "json")
+        function drawTable(data){
+            var finTable = $("#finTable").DataTable({
+                "searching": true,
+                //"info": false,
+               // "paging": false,
+                "sDom": '<"toolsbar"><"H"TfrC>t<"F"ip>',
+                data: data,
+               // "ajaxSource":"{% url 'fvjson' %}",
+                "oTableTools":{
+                    "sRowSelect": "single",
+                    "aButtons": [
+                        {
+                            "sExtends": "text",
+                            "sButtonText": "view",
+                            "fnClick": function(nButton, oConfig, oFlash){
+                                var ott = TableTools.fnGetInstance("finTable");
+                                console.log(ott)
+                                var selectAtrs = ott.fnGetSelectedData();
+                                if (selectAtrs.length!=1){
+                                    alert("请选择一行进行查看")
+                                    return false
+                                }
+                                $("#lotTable").DataTable().destroy();
+                                get_invoice_lot(selectAtrs[0].id)
+                                $("#lotModal").modal()
+                             }
+                        }
+                    ]
+                },
+                "columns":[
+                    {"data": "invoice_nu"},
+                    {"data": "customer_id"},
+                    {"data": "goods_type"},
+                    {"data": "goods_nu"},
+                    {"data": "cost_sum"},
+                    {"data": "dollar_sum"},
+                    {"data": "modify_date", "fnCreatedCell":function(nTd, sData, oData, iRow, iCol){
+                        element = $(nTd).empty();
+                        var modify_date = oData["modify_date"];
+                        var modify_times = oData["modify_times"];
+                        if (modify_date && modify_times){
+                            element.append("<span>"+modify_times+"+"+modify_date+"</span>")
+                        }
+                    }},
                 ]
-            },
-            "columns":[
-                {"data": "invoice_nu"},
-                {"data": "customer_id"},
-                {"data": "goods_type"},
-                {"data": "goods_nu"},
-                {"data": "cost_sum"},
-                {"data": "dollar_sum"},
-                {"data": "modify_date", "fnCreatedCell":function(nTd, sData, oData, iRow, iCol){
-                    element = $(nTd).empty();
-                    var modify_date = oData["modify_date"];
-                    var modify_times = oData["modify_times"];
-                    if (modify_date && modify_times){
-                        element.append("<span>"+modify_times+"+"+modify_date+"</span>")
+            })
+        }
+        // 汇总图形部分
+        function countDraw(data){
+            myChart = echarts.init(document.getElementById("countGraph"))
+            option = {
+                title : {
+                    text: '最终发票汇总信息',
+                },
+                tooltip : {
+                    trigger: 'axis'
+                },
+                legend: {
+                    data:["最终发票汇总信息"]
+                },
+                xAxis : [
+                    {
+                        type : 'category',
+                        data : ["客户", "发票数量", "生皮总额", "美金总额"]
                     }
-                }},
-            ]
-        })
+                ],
+                yAxis : [
+                    {
+                        type : 'value'
+                    }
+                ],
+                series : [
+                    {
+                        name:'发票汇总',
+                        type:'bar',
+                        barCategoryGap: '80%',
+                        itemStyle: {
+                            normal: {
+                                color: "tomato",
+                                label:{
+                                    show: true,
+                                }
+                            }
+                        },
+                        data: data,
+                    },
+                ]
+            };
+            myChart.setOption(option)
+        }
     </script>
 {% endblock %}
 {% block navname %}invoice{% endblock navname %}

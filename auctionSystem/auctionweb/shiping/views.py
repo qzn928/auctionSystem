@@ -184,3 +184,10 @@ def to_pay_shiping(request):
             payment=payment
         ).save()
     return ajax_success({"blance": ship_obj.account.balance})
+
+def ship_harbour_count(request, template_name):
+    '''
+        货运按港口统计
+    '''
+    foreign_ship = ForeignShip.objects.all()
+    return render(request, template_name, {"foreign_ship": foreign_ship})

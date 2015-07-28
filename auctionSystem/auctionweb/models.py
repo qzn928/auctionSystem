@@ -8,6 +8,11 @@ from django.db import models
 auctionSystem 总model文件
 '''
     
+PEEL_LEVEL = (
+    ("1", "1"),
+    ("2", "2"),
+    ("3", "3")
+)
 class AuctionField(models.Model):
     """
     拍卖场
@@ -41,7 +46,7 @@ class Account(models.Model):
 
 class Customer(models.Model):
     """客户类"""
-    # 客户姓名
+    # 客户名称
     name = models.CharField(max_length=50) 
     # 客户编号
     identifier = models.CharField(max_length=20) 
@@ -242,12 +247,6 @@ class Invoice(models.Model):
     modify_date = models.DateTimeField(null=True) 
     # 是否是preinvoice
     is_pre = models.IntegerField(default=1) 
-    # 下缸时间(货物到削皮场加工)
-    peel_time = models.DateField(null=True) 
-    # 出缸时间(货物到削皮场加工完成)
-    out_peel_time = models.DateField(null=True) 
-    # 发货时间
-    delivery_time = models.DateField(null=True)
     # 是否货运
     is_ship = models.IntegerField(default=0) 
     #货运
@@ -311,19 +310,6 @@ class Invoice(models.Model):
             invoice_data.append(("status", self.get_peel_status))
         return dict(invoice_data)
     
-    def get_commodity_info(self):
-        commodity_list = self.commodity_set.all()
-        com_info_dict = {}
-        if commodity_list:
-            com_info_dict["commodity"] = commodity_list[0]
-            peel_price = 0
-            try:
-                for com in commodity_list:
-                    peel_price += com.peel_inform.peel_price
-            except:pass
-            com_info_dict["peel_price"] = peel_price
-        return com_info_dict
-    
     @property
     def get_peel_status(self):
         commodity_list = self.commodity_set.all()
@@ -379,6 +365,16 @@ class Commodity(models.Model):
     peel_inform = models.ForeignKey(PeelInform, null=True) 
     # 拍卖场
     auction = models.ForeignKey(AuctionField)
+    # 下缸时间(货物到削皮场加工)
+    peel_time = models.DateField(null=True) 
+    # 出缸时间(货物到削皮场加工完成)
+    out_peel_time = models.DateField(null=True) 
+    # 发货时间
+    delivery_time = models.DateField(null=True)
+    # 削皮优先级
+    peel_level = models.CharField(choices=PEEL_LEVEL, max_length=2, default="1")
+    # 标记是否可以添加削皮时间
+    peel_time_flag = models.IntegerField(default=0)
 
     def __str__(self):
         return self.lot
@@ -397,11 +393,29 @@ class Commodity(models.Model):
                     commodity.append((field, getattr(getattr(self, field), "invoice_nu")))
                 except AttributeError:
                     commodity.append((field, ''))
-            elif field == "auction_time":
+            elif field in ["auction_time", "peel_time", "out_peel_time", "delivery_time"]:
                 try:
                     commodity.append((field, getattr(self, field).strftime("%Y-%m-%d")))
                 except AttributeError:
                     commodity.append((field, ''))
             else:
                 commodity.append((field, getattr(self, field)))
+        commodity.append(("peel_price", self.peel_inform.peel_price))
+        commodity.append(("peel_status", self.get_peeltime_status))
         return dict(commodity)
+    @property
+    def get_peeltime_status(self):
+        now = datetime.datetime.now()
+        date = datetime.date(now.year, now.month, now.day)
+        try:
+            if not self.peel_time or date<self.peel_time:
+                status = "未下缸"
+            elif not self.out_peel_time or self.peel_time<=date<self.out_peel_time:
+                status = "已下缸未完成"
+            elif not self.delivery_time or self.out_peel_time<=date<self.delivery_time:
+                status = "已完成未发货"
+            else:
+                status = "已发货"
+        except:
+            return ""
+        return status

@@ -9,6 +9,7 @@
         <ul class="nav nav-tabs" id="myTab">
             <li  class="active"><a href="#tab1">货运公司</a></li>
             <li><a href="#tab2">地接公司</a></li>
+          <li><a href="#tab3">代理公司</a></li>
             <li><a href="#tab4">客户</a></li>
         </ul>
         <div class="tab-content">
@@ -31,8 +32,6 @@
                                 <h4 class="panel-title">
                                     <a class="accordion-toggle accordion-toggle-styled collapsed" data-toggle="collapse" data-parent="#accordion1" href="#collapse_{{f_ship.id}}">
                                     货运公司:{{f_ship.name}}
-                                    <span style="margin-left:20px">账户欠款: {{f_ship.account.balance}}</span>
-                                    <button style="margin-left:30px;line-height:10px" class="btn btn-mini btn-primary" id="ship-{{f_ship.id}}"> pay </button>
                                     </a>
                                 </h4>
                             </div>
@@ -41,14 +40,10 @@
                                     <table id="ship_{{f_ship.name}}" cellspacing="0" width="100%">
                                         <thead>
                                             <tr>
-                                                <th style="width:100px;text-align:center"><span>选择</span></th>
-                                                <th><span>拍卖会</span></th>
-                                                <th><span>运单号</span></th>
-                                                <th><span>到港口</span></th>
-                                               <!-- <th><span>品种</span></th>-->
-                                                <th><span>数量</span></th>
-                                                <th><span>计费重量</span></th>
-                                                <th><span>总金额</span></th>
+                                                <th><span>港口</span></th>
+                                                <th><span>种类</span></th>
+                                                <th><span>总计重量</span></th>
+                                                <th><span>总计张数</span></th>
                                                 <th><span>平均/KG</span></th>
                                                 <th><span>平均/张数</span></th>
                                             </tr>
@@ -66,62 +61,6 @@
         <div id="tab2" class="tab-pane">wang bao zhong</div>
         </div>
     </div>
-{% endblock %}
-<!-- Modal -->
-{% block footer_block %}
-<div class="modal fade" id="invoiceModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        <h4 class="modal-title" id="myModalLabel">货运相关的发票信息</h4>
-      </div>
-      <table style="margin-bottom:20px" class="display" id="invoice" cellspacing="0" width="100%">
-        <thead>
-          <tr>
-            <th><span>拍卖会</span></th>
-            <th><span>Invoice No</span></th>
-            <th><span>Customer No</span></th>
-            <th><span>数量</span></th>
-            <th><span>原始发票金额</span></th>
-          </tr>
-        </thead>
-      </table>
-    </div>
-  </div>
-</div>
-<div class="modal fade" id="paymentOrder" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        <h4 class="modal-title" id="myModalLabel">货运付费</h4>
-      </div>
-        <form class="form-horizontal" role="form" id="paymentForm"> 
-          <div class="modal-body">
-                <div class="form-body" style="padding-bottom:0px">
-                    <div class="form-group">
-                        <label class="col-sm-3 control-label">Credit Note</label>
-                        <div class="col-sm-9"> 
-                            <input type="text" name="credit_note" id="credit_note" class="form-control" placeholder="must"/>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label class="col-sm-3 control-label">payment</label>
-                        <div class="col-sm-9"> 
-                            <input type="text" name="payment" id="payment" class="form-control"  placeholder="must"/>
-                        </div>
-                    </div>
-                </div>
-          </div>
-          <div class="modal-footer">
-            <button type="submit" class="btn btn-primary" id="paymentSumit">Save</button>
-            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-          </div>
-        </form>
-    </div>
-  </div>
-</div>
 {% endblock %}
 {% block footer_js %}
     <script type="text/javascript">
@@ -141,10 +80,6 @@
                 "paging": false,
                 "data": list_data,
                 "columns":[
-                    {"data": null, "className": "ceTable", "fnCreatedCell":function(nTd, sData, oData, iRow, iCol){
-                        element = $(nTd).empty();
-                        element.append("<input type='checkbox' name='checkList' />");
-                    }}, 
                     {"data": "auction_date"},
                     {"data": "master_nu"},
                     {"data": "harbour"},
@@ -195,5 +130,5 @@
        })
     </script>
 {% endblock %}
-{% block navname %}shipping{% endblock %}
+{% block navname %}count{% endblock %}
 

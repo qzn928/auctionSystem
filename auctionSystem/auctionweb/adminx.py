@@ -19,15 +19,6 @@ class PeelFieldAdmin(object):
 
 xadmin.site.register(PeelField, PeelFieldAdmin)
 
-class CommodityAdmin(object):
-    pass
-
-xadmin.site.register(Commodity, CommodityAdmin)
- 
-class InvoiceAdmin(object):
-    pass
-xadmin.site.register(Invoice, InvoiceAdmin)
-
 class AuctionFieldAdmin(object):
     pass
 

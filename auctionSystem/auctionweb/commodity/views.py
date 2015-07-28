@@ -25,6 +25,7 @@ def add(request, auction_id, template_name):
     except AuctionField.DoesNotExist:
         raise Http404
     auc_varietys = auc_obj.variety_set.all()
+    customers = Customer.objects.all()
     if request.method == "POST":
         mem = memcache.Client(settings.MEMCACHES)
         cform = CommodityForm(request.POST)
@@ -36,18 +37,18 @@ def add(request, auction_id, template_name):
             cform = CommodityForm()
             html = render_to_string(
                 "auctionweb/commodity/modform.html",
-                {"cform": cform, "auc_varietys": auc_varietys}, 
+                {"cform": cform, "auc_varietys": auc_varietys, "customers":customers}, 
                 context_instance=RequestContext(request)
             )
             return ajax_success({"success": True, "html": html})
         else:
             html = render_to_string(
                 "auctionweb/commodity/modform.html",
-                {"cform": cform, "auc_varietys": auc_varietys}, 
+                {"cform": cform, "auc_varietys": auc_varietys, "customers":customers}, 
                 context_instance=RequestContext(request)
             )
             return ajax_success({"html": html})
-    C = {"cform": cform, "auc_varietys": auc_varietys}   
+    C = {"cform": cform, "auc_varietys": auc_varietys, "customers": customers}   
     return render(request, template_name, C)
 
 def change(request, lot_nu, template_name):
@@ -81,6 +82,7 @@ def copy_last_form(request, template_name):
         raise Http404
     mem = memcache.Client(settings.MEMCACHES)
     last_form_data = mem.get(mckeys.COPY_LAST_FORM)
+    customers = Customer.objects.all()
     if last_form_data:
         copy_form_data = last_form_data.copy()
         copy_form_data.pop("lot")
@@ -91,7 +93,8 @@ def copy_last_form(request, template_name):
         template_name,
         {
             "cform": cform, 
-            "auc_varietys": varietys
+            "auc_varietys": varietys,
+            "customers": customers
         },
         context_instance=RequestContext(request)
     )
@@ -124,6 +127,20 @@ def list(request, template_name):
     }
     print template_name
     return render(request, template_name, C)
+
+def add_peel_time(request, com_id):
+    '''添加发票的削皮场流程时间参数'''
+    if request.method != "POST":                                   
+        raise Http404
+    try:
+        com_obj = Commodity.objects.get(pk=com_id)
+    except Commodity.DoesNotExist:
+        return ajax_error("commodity obj does not exist")
+    data = request.POST.copy()
+    data.pop('csrfmiddlewaretoken')
+    [setattr(com_obj, key, val) for key, val in data.items() if val]
+    com_obj.save()
+    return ajax_success()
 
 @csrf_exempt
 def get_select(request):

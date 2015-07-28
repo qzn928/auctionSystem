@@ -11,4 +11,5 @@ urlpatterns = patterns('auctionweb.commodity.views',
     url(r'^ajaxlist/(?P<auction_id>\d+)/$', "ajax_list_data", name="ajax_list"),
     url(r'^delete/', "delete", name="cdel"),
     url(r'^getselect/', "get_select", name="get_field_select"),
+    url(r'^add/peeltime/(?P<com_id>\d+)/$', "add_peel_time", name="add_peel_time"),
 )

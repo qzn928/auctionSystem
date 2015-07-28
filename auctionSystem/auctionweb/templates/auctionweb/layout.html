@@ -63,7 +63,6 @@
 		<div class="hor-menu hor-menu-light hidden-sm hidden-xs">
 			<ul class="nav navbar-nav">
 				<li class="classic-menu-dropdown" id="nav-commodity">
-
                     <a href="{% url 'clist'%}">
                     <i class="fa fa-gift"></i>
 					Commodity<span class="selected">
@@ -125,6 +124,13 @@
 							<i class="fa fa-user"></i>ship classify </a>
 						</li>
 					</ul>
+				</li>
+				<li class="classic-menu-dropdown" id="nav-count">
+                    <a href="{% url 'ship_harbour_count' %}">
+                    <i class="fa fa-gift"></i>
+					Shiping Count<span class="selected">
+					</span>
+					</a>
 				</li>
 			</ul>
 		</div>
@@ -254,6 +260,7 @@
 <script src="/static/assets/plugins/datatables/extensions/TableTools/js/dataTables.tableTools.js" type="text/javascript"></script>
 <script src="/static/assets/plugins/jquery-ui.min.js" type="text/javascript"></script>
 <script src="/static/assets/admin/layout/scripts/quick-sidebar.js" type="text/javascript"></script>
+<script src="/static/js/echarts-all.js" type="text/javascript"></script>
 <!-- END CORE PLUGINS -->
 
 <script src="/static/assets/scripts/metronic.js" type="text/javascript"></script>
