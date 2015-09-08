@@ -42,6 +42,7 @@
                                     <th><span>品种</span></th>
                                     <th><span>削皮等级</span></th>
                                     <th><span>是否签到</span></th>
+                                    <th><span>削皮修改时间+次数</span></th>
                                     <th><span>下缸时间</span></th>
                                     <th><span>出缸时间</span></th>
                                     <th><span>发货时间</span></th>
@@ -179,6 +180,7 @@
                                         if(data.success){
                                             var url_str = "{% url 'cpdata' %}?peel_id="+peel_id+"";
                                             peel_tabs["peel"+peel_id].ajax.url(url_str).load();
+                                            $("#timeModal").find("button[data-dismiss]").trigger("click")
                                         }else{
                                             alert("failed!!!")
                                         }
@@ -214,6 +216,16 @@
                     {"data": "types"},
                     {"data": "peel_level"},
                     {"data": "peel_time_flag"},
+                    {"data": "peel_mo_time", "fnCreatedCell":function(nTd, sData, oData, iRow, iCol){
+                        var element = $(nTd).empty();
+                        var modify_num = oData["peel_mo_num"];
+                        var modify_times = oData["peel_mo_time"];
+                        if (modify_num && modify_times){
+                            element.append("<span>"+modify_num+"+"+modify_times+"</span>")
+                        }else{
+                            return ''
+                        }
+                    }},
                     {"data": "peel_time"},
                     {"data": "out_peel_time"},
                     {"data": "delivery_time"},

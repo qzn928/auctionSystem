@@ -58,3 +58,8 @@ class AccountAdmin(object):
     pass
 
 xadmin.site.register(Account, AccountAdmin)
+
+class AuctionAccountAdmin(object):
+    pass
+
+xadmin.site.register(AuctionAccount, AuctionAccountAdmin)

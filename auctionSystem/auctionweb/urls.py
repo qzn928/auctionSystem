@@ -22,6 +22,7 @@ urlpatterns = patterns('',
     url(r'^invoice/', include("auctionweb.invoice.urls")),
     url(r'^peelfield/', include("auctionweb.peelfield.urls")),
     url(r'^shiping/', include("auctionweb.shiping.urls")),
+    url(r'^account/', include("auctionweb.account.urls")),
     url(r'^login/', "auctionweb.views.login", {"template_name": "auctionweb/login.html"}, name="login"),
     url(r'^logout/', "auctionweb.views.logout", name="logout"),
 )

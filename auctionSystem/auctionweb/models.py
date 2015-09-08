@@ -13,6 +13,27 @@ PEEL_LEVEL = (
     ("2", "2"),
     ("3", "3")
 )
+ACCOUNT_TYPE = (
+    ("CUS",   u"客户账户"),
+    ("COM",   u"公司账户"),
+    ("AUT",   u"拍卖会账户"),
+    ("OTHER", u"其他账户"),
+)
+AUCTION_ACCOUNT_TYPE = (
+    ("AMERICAN", u"美元账户"),
+    ("LOCAL", u"本地账户")
+)
+
+class Account(models.Model):
+    '''
+    账户表
+    '''
+    name = models.CharField(max_length=30, unique=True)
+    balance = models.IntegerField()
+    style = models.CharField(choices=ACCOUNT_TYPE, max_length=10, default="OTHER")
+    def __str__(self):
+        return self.name
+
 class AuctionField(models.Model):
     """
     拍卖场
@@ -22,6 +43,17 @@ class AuctionField(models.Model):
     # 货币种类
     currency = models.CharField(max_length=50)
 
+    def __str__(self):
+        return self.name
+
+class AuctionAccount(models.Model):
+    '''
+    拍卖会账户
+    '''
+    name = models.CharField(max_length=30)
+    balance = models.IntegerField()
+    style = models.CharField(choices=AUCTION_ACCOUNT_TYPE, max_length=10, default="AMERICAN")
+    auction = models.ForeignKey(AuctionField)
     def __str__(self):
         return self.name
 
@@ -35,15 +67,6 @@ class Variety(models.Model):
     def __str__(self):
         return self.name
 
-class Account(models.Model):
-    '''
-    账户表
-    '''
-    name = models.CharField(max_length=30, unique=True)
-    balance = models.IntegerField()
-    def __str__(self):
-        return self.name
-
 class Customer(models.Model):
     """客户类"""
     # 客户名称
@@ -54,6 +77,8 @@ class Customer(models.Model):
     phone = models.CharField(max_length=20) 
     # 客户地址
     address = models.TextField() 
+    # 客户账户
+    account = models.OneToOneField(Account, null=True)
 
     def __str__(self):
         return self.name
@@ -161,6 +186,8 @@ class Shiping(models.Model):
     takeoff_time = models.DateField(null=True)
     #落地日期
     arrive_time = models.DateField(null=True)
+    #清关日期
+    clear_time = models.DateField(null=True)
 
 
     def __str__(self):
@@ -173,12 +200,22 @@ class Shiping(models.Model):
         return flag_str + str(o_count+1)
 
     @property
+    def get_clear_status(self):
+        if not self.clear_time:
+            return "清关未完成"
+        now = datetime.datetime.now()
+        date = datetime.date(now.year, now.month, now.day)
+        if date <= self.clear_time:
+            status = "清关未完成"
+        else:
+            status = "清关已完成"
+        return status
+
+    @property
     def get_ship_status(self):
         now = datetime.datetime.now()
         date = datetime.date(now.year, now.month, now.day)
-        if not self.takeoff_time:
-            return ''
-        if date<self.takeoff_time:
+        if not self.takeoff_time or date<self.takeoff_time:
             status = "货未发"
         elif self.takeoff_time<=date<self.arrive_time:
             status = "运输途中"
@@ -191,13 +228,13 @@ class Shiping(models.Model):
         fields = [f.name for f in self._meta.fields]
         invoice_list = self.invoice_set.all()
         if invoice_list:
-            auction_date = invoice_list[0].get_commodity_info()\
-                .get("commodity").auction_time.strftime("%Y-%m-%d")
+            auction_name = invoice_list[0].get_commodity()\
+                .auction.name
             ship_list.extend([
                 ("clearance_company", invoice_list[0].clearance_company.name),
                 ("delivery_company", invoice_list[0].delivery_company.name),
                 ("harbour", invoice_list[0].harbour.name),
-                ("auction_date", auction_date),
+                ("auction_name", auction_name),
             ])
         if self.total_fee:
             ship_list.extend([
@@ -212,7 +249,7 @@ class Shiping(models.Model):
                     ship_list.append((field, getattr(getattr(self, field), "name")))
                 except AttributeError:
                     ship_list.append((field, ''))
-            elif field in ["auction_date", "takeoff_time", "arrive_time"]:
+            elif field in ["auction_date", "takeoff_time", "arrive_time", "clear_time"]:
                 try:
                     ship_list.append((field, getattr(self, field).strftime("%Y-%m-%d")))
                 except AttributeError:
@@ -257,6 +294,9 @@ class Invoice(models.Model):
     delivery_company = models.ForeignKey(Delivery, null=True)
     # 港口
     harbour = models.ForeignKey(Harbour, null=True)
+    # 毛重
+    not_net_weight = models.IntegerField(null=True) 
+
 
     def __str__(self):
         return self.invoice_nu
@@ -309,7 +349,11 @@ class Invoice(models.Model):
                 invoice_data.append((field, field_val))
             invoice_data.append(("status", self.get_peel_status))
         return dict(invoice_data)
-    
+
+    def get_commodity(self):
+        com_obj = self.commodity_set.all()
+        return com_obj[0] if com_obj else '' 
+
     @property
     def get_peel_status(self):
         commodity_list = self.commodity_set.all()
@@ -375,6 +419,12 @@ class Commodity(models.Model):
     peel_level = models.CharField(choices=PEEL_LEVEL, max_length=2, default="1")
     # 标记是否可以添加削皮时间
     peel_time_flag = models.IntegerField(default=0)
+    # 削皮修改次数 
+    peel_mo_num = models.IntegerField(default=0)
+    # 削皮修改时间
+    peel_mo_time = models.DateTimeField(null=True)
+    #削皮备注
+    peel_comment = models.CharField(max_length=100, null=True)
 
     def __str__(self):
         return self.lot
@@ -393,14 +443,14 @@ class Commodity(models.Model):
                     commodity.append((field, getattr(getattr(self, field), "invoice_nu")))
                 except AttributeError:
                     commodity.append((field, ''))
-            elif field in ["auction_time", "peel_time", "out_peel_time", "delivery_time"]:
+            elif field in ["auction_time", "peel_time", "out_peel_time", "delivery_time", "peel_mo_time"]:
                 try:
                     commodity.append((field, getattr(self, field).strftime("%Y-%m-%d")))
                 except AttributeError:
                     commodity.append((field, ''))
             else:
                 commodity.append((field, getattr(self, field)))
-        commodity.append(("peel_price", self.peel_inform.peel_price))
+        commodity.append(("peel_price", self.peel_inform.peel_price if self.peel_inform else ''))
         commodity.append(("peel_status", self.get_peeltime_status))
         return dict(commodity)
     @property

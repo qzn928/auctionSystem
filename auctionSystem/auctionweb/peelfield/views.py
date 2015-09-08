@@ -108,6 +108,9 @@ def add_peel_field(request, invoice_id):
     for com in com_list:
         com.peel_field = peel_field_obj
         com.peel_inform = peel_inform_obj
+        com.peel_mo_num = com.peel_mo_num + 1
+        com.peel_mo_time = datetime.datetime.now()
+        com.peel_comment = post_data.get("peel_comment")
         com.peel_time_flag = post_data.get("peel_time_flag")
         com.peel_level = post_data.get("peel_level")
         com.save()

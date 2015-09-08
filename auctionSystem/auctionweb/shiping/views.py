@@ -35,14 +35,13 @@ def unshipped_data(request):
     back_data = []
     for v in all_invoice_obj:
         data = {}
-        commodity_info = v.get_commodity_info()
-        com_obj = commodity_info.get("commodity")
-        try:
-            peel_name = com_obj.peel_field.name
-        except AttributeError:
-            data["peel_name"] = ''
-        else:
-            data["peel_name"] = peel_name
+        com_obj = v.get_commodity()
+        if com_obj:
+            try:
+                peel_name = com_obj.peel_field.name
+                data["peel_name"] = peel_name
+            except AttributeError:
+                data["peel_name"] = ''
         data["auction"] = com_obj.auction.name
         data["customer_no"] = com_obj.customer_id
         data.update(v.toDICT())
@@ -76,7 +75,8 @@ def ship_data(request):
     back_data = []
     for ship_obj in ship_obj_list:
         data = ship_obj.toDICT()
-        data.update({"status": ship_obj.get_ship_status})
+        data.update({"ship_status": ship_obj.get_ship_status})
+        data.update({"clear_status": ship_obj.get_clear_status})
         back_data.append(data)
     return ajax_success(back_data)
 
@@ -84,9 +84,9 @@ def add_ship_info(request, ship_nu):
     '''接收ship的post信息，并保存'''
     try:
         ship_obj = Shiping.objects.get(pk=ship_nu)
-    except Shiping.DoesNotExist:
+        foreign_ship = ForeignShip.objects.get(name=request.POST.get("foreign_ship"))
+    except:
         raise Http404
-    foreign_ship = ForeignShip.objects.get(name=request.POST.get("foreign_ship"))
     data = {}
     for key, val in request.POST.items():
         data[key] = val
@@ -106,7 +106,7 @@ def ship_invoice(request, ship_nu):
     back_data = []
     for invo in invoice_obj:
         data = {}
-        com_obj = invo.get_commodity_info().get("commodity")
+        com_obj = invo.get_commodity()
         data["auction"] = com_obj.auction.name
         data["customer_id"] = com_obj.customer_id
         data["invoice_nu"] = invo.invoice_nu

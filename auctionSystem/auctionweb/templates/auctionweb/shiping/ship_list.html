@@ -21,7 +21,7 @@
             <thead>
                 <tr>
                     <th><span>Order No</span></th>
-                    <th><span>拍卖会日期</span></th>
+                    <th><span>拍卖会</span></th>
                     <th><span>数量</span></th>
                     <th><span>原始发票总额</span></th>
                     <th><span>国外货运公司</span></th>
@@ -34,6 +34,8 @@
                     <th><span>起飞日期</span></th>
                     <th><span>落地日期</span></th>
                     <th><span>货运状态</span></th>
+                    <th><span>清关日期</span></th>
+                    <th><span>清关状态</span></th>
                 </tr>
             </thead>
         </table>
@@ -103,6 +105,12 @@
                             <input id="arrive_time" name="arrive_time" class="form-control" type='text'/>
                         </div>
                     </div>
+                    <div class="form-group">
+                        <label class="col-sm-3 control-label">清关日期</label>
+                        <div class="col-sm-9"> 
+                            <input id="clear_time" name="clear_time" class="form-control" type='text'/>
+                        </div>
+                    </div>
                 </div>
           </div>
           <div class="modal-footer">
@@ -142,6 +150,7 @@
         $("#harbour").select2();
         $("#takeoff_time").datepicker({dateFormat: "yy-mm-dd"});
         $("#arrive_time").datepicker({dateFormat: "yy-mm-dd"});
+        $("#clear_time").datepicker({dateFormat: "yy-mm-dd"});
         function create_in_table(ship_nu){
             var invoice = $("#invoice").DataTable({
                 "paging": false,
@@ -207,7 +216,7 @@
             "ajaxSource":"{% url 'ship_data' %}",
             "columns":[
                 {"data": "shiping_nu"},
-                {"data": "auction_date"},
+                {"data": "auction_name"},
                 {"data": "com_num"},
                 {"data": "invoice_count"},
                 {"data": "foreign_ship"},
@@ -219,7 +228,9 @@
                 {"data": "charge_weight"},
                 {"data": "takeoff_time"},
                 {"data": "arrive_time"},
-                {"data": "status"},
+                {"data": "ship_status"},
+                {"data": "clear_time"},
+                {"data": "clear_status"},
             ]
         })
         // 根据checkbox 选中列

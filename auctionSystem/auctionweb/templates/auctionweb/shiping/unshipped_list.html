@@ -31,6 +31,7 @@
                     <th><span>地接公司</span></th>
                     <th><span>清关公司</span></th>
                     <th><span>到港</span></th>
+                    <th><span>毛重</span></th>
                 </tr>
             </thead>
         </table>
@@ -84,6 +85,11 @@
                             </select>
                         </div>
                     </div>
+                    <div class="form-group">
+                        <label class="col-sm-3 control-label">毛重</label>
+                        <div class="col-sm-9"> 
+                            <input type="text" name="not_net_weight" class="form-control">
+                        </div>
                 </div>
           </div>
           <div class="modal-footer">
@@ -147,16 +153,23 @@
                                 var delivery = []; //地接公司
                                 var harbour = []; //港口
                                 var peel = []; // 削皮场
+                                var auction = [] //拍卖场
                                 var invoice_id_arr = [];
+                                var can_create = true;
                                 $.each(ott.data(), function(i, n){
+                                    if (n.clearance_company=="" || n.delivery_company=="" || n.harbour==""){
+                                        can_create = false;
+                                    }
                                     clearance.push(n.clearance_company);
                                     delivery.push(n.delivery_company);
                                     harbour.push(n.harbour);
+                                    auction.push(n.auction);
                                     peel.push(n.peel);
                                     invoice_id_arr.push(n.id);
                                 })
-                                if ($.unique(clearance).length!==1 && $.unique(delivery).length!=1 && $.unique(harbour)!=1 && $.unique(peel)!==1){
-                                    alert("清关公司、削皮场、地接公司、港口相同才能生成同一货运!!!");
+                                if (!can_create){alert("请添加货运相关公司");return}
+                                if ($.unique(clearance).length!==1 && $.unique(delivery).length!=1 && $.unique(harbour)!=1 && $.unique(peel)!==1&&$.unique(auction)){
+                                    alert("拍卖场、清关公司、削皮场、地接公司、港口相同才能生成同一货运!!!");
                                     return 
                                 }
                                 $.post("{% url "create_ship" %}", 
@@ -191,6 +204,7 @@
                 {"data": "delivery_company"},
                 {"data": "clearance_company"},
                 {"data": "harbour"},
+                {"data": "not_net_weight"}
             ]
         })
         // 根据checkbox 选中列

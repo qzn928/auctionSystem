@@ -1,0 +1,391 @@
+{% extends 'auctionweb/layout.html' %}
+
+{% block header_js %}
+    <style>
+        @media (min-width: 768px){
+            .sidebar {
+                position: fixed;
+                top: 120px;
+                bottom: 0;
+                left: 20px;
+                height:200px;
+                z-index: 1000;
+                display: block;
+                padding: 20px;
+                overflow-x: hidden;
+                overflow-y: auto;
+                background-color: #f5f5f5;
+                border-right: 1px solid #eee;
+            }
+        }
+        .active{background-color:#26a69a}
+        .nav-sidebar > .active > a, .nav-sidebar > .active > a:hover, .nav-sidebar > .active > a:focus {
+            color: #fff;
+            background-color: #428bca;
+        }
+    </style>
+{% endblock%}
+
+
+{% block content %}
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-md-2 sidebar">
+          <ul class="nav nav-sidebar">
+            <li class="active"><a data-url="customer">客户账户</a></li>
+            <li><a data-url="company">公司账户</a></li>
+            <li><a data-url="auction">拍卖行账户</a></li>
+            <li><a data-url="other">其他账户</a></li>
+          </ul>
+        </div>
+        <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2">
+            <table class="display" id="account" cellspacing="0" width="100%">
+                <thead>
+                    <tr>
+                        <th>账户名称</th>
+                        <th>账户类型</th>
+                        <th>账户余额</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+            </table>
+        </div>
+      </div>
+     </div>
+{% endblock%}
+{% block footer_block %}
+    <div class="modal fade" id="chargeCus" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title" id="myModalLabel">向客户账户充值</h4>
+          </div>
+          <form class="form-horizontal" role="form" id="chargeCusForm" method="post">
+              <div class="modal-body">
+                  <div class="form-body" style="padding-bottom:0px">
+                    <div class="form-group">
+                        <label class="col-sm-3 control-label">充值金额</label>
+                        <div class="col-sm-9">
+                            <input type="text" name="balance" class="form-control"/>
+                        </div>
+                    </div> 
+                 </div>
+              </div>
+              <div class="modal-footer">
+                <button type="submit" class="btn btn-primary">Save</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+              </div>
+          </form>
+        </div>
+      </div>
+    </div> 
+    <div class="modal fade" id="transCus" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title" id="myModalLabel">向公司账户转账</h4>
+          </div>
+          <form class="form-horizontal" role="form" id="transCusForm" method="post">
+              <div class="modal-body">
+                  <div class="form-body" style="padding-bottom:0px">
+                    <div class="form-group">
+                        <label class="col-sm-3 control-label">公司子账户</label>
+                        <div class="col-sm-9">
+                            <select name="company">
+                                {% for ac in account %}
+                                <option value="{{ac.id}}">{{ac.name}}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div> 
+                    <div class="form-group">
+                        <label class="col-sm-3 control-label">转账金额</label>
+                        <div class="col-sm-9">
+                            <input type="text" name="balance" class="form-control"/>
+                        </div>
+                    </div> 
+                 </div>
+              </div>
+              <div class="modal-footer">
+                <button type="submit" class="btn btn-primary">Save</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+              </div>
+          </form>
+        </div>
+      </div>
+    </div> 
+    <div class="modal fade" id="transCom" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title" id="myModalLabel">向拍卖账户转账</h4>
+          </div>
+          <form class="form-horizontal" role="form" id="transComForm" method="post">
+              <div class="modal-body">
+                  <div class="form-body" style="padding-bottom:0px">
+                    <div class="form-group">
+                        <label class="col-sm-3 control-label">拍卖行美元账户</label>
+                        <div class="col-sm-9">
+                            <select name="auction">
+                                {% for ac in am_auc_accounts %}
+                                <option value="{{ac.id}}">{{ac.name}}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div> 
+                  </div>
+                  <div class="form-body" style="padding-bottom:0px">
+                    <div class="form-group">
+                        <label class="col-sm-3 control-label">转账金额</label>
+                        <div class="col-sm-9">
+                            <input type="text" name="balance" class="form-control"/>
+                        </div>
+                    </div> 
+                  </div>
+                  <div class="form-body" style="padding-bottom:0px">
+                    <div class="form-group">
+                        <label class="col-sm-3 control-label">转账汇率</label>
+                        <div class="col-sm-9">
+                            <input type="text" name="rate" class="form-control"/>
+                        </div>
+                    </div> 
+                  </div>
+              </div>
+              <div class="modal-footer">
+                <button type="submit" class="btn btn-primary">Save</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+              </div>
+          </form>
+        </div>
+      </div>
+    </div> 
+    <div class="modal fade" id="transOthers" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title" id="myModalLabel">向其他账户转账</h4>
+          </div>
+          <form class="form-horizontal" role="form" id="transOtherForm" method="post">
+              <div class="modal-body">
+                  <div class="form-body" style="padding-bottom:0px">
+                    <div class="form-group">
+                        <label class="col-sm-3 control-label">其他账户</label>
+                        <div class="col-sm-9">
+                            <select name="other">
+                                {% for ac in other_accounts %}
+                                <option value="{{ac.id}}">{{ac.name}}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div> 
+                  </div>
+                  <div class="form-body" style="padding-bottom:0px">
+                    <div class="form-group">
+                        <label class="col-sm-3 control-label">转账金额</label>
+                        <div class="col-sm-9">
+                            <input type="text" name="balance" class="form-control"/>
+                        </div>
+                    </div> 
+                  </div>
+              </div>
+              <div class="modal-footer">
+                <button type="submit" class="btn btn-primary">Save</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+              </div>
+          </form>
+        </div>
+      </div>
+    </div> 
+    <div class="modal fade" id="transAuc" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title" id="myModalLabel">向公司账户转账</h4>
+          </div>
+          <form class="form-horizontal" role="form" id="transAucForm" method="post">
+              <div class="modal-body">
+                  <div class="form-body" style="padding-bottom:0px">
+                    <div class="form-group">
+                        <label class="col-sm-3 control-label">公司子账户</label>
+                        <div class="col-sm-9">
+                            <select name="com_id">
+                                {% for ac in account %}
+                                <option value="{{ac.id}}">{{ac.name}}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div> 
+                    <div class="form-group">
+                        <label class="col-sm-3 control-label">转账金额</label>
+                        <div class="col-sm-9">
+                            <input type="text" name="balance" class="form-control"/>
+                        </div>
+                    </div> 
+                    <div class="form-group">
+                       <label class="col-sm-3 control-label">转账汇率</label>
+                       <div class="col-sm-9">
+                           <input type="text" name="rate" class="form-control"/>
+                       </div>
+                    </div> 
+                 </div>
+              </div>
+              <div class="modal-footer">
+                <button type="submit" class="btn btn-primary">Save</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+              </div>
+          </form>
+        </div>
+      </div>
+    </div> 
+    <div class="modal fade" id="transAucOther" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title" id="myModalLabel">向其他账户转账</h4>
+          </div>
+          <form class="form-horizontal" role="form" id="transAucOtherForm" method="post">
+              <div class="modal-body">
+                  <div class="form-body" style="padding-bottom:0px">
+                 <!--   <div class="form-group">
+                        <label class="col-sm-3 control-label">其他账户</label>
+                        <div class="col-sm-9">
+                            <select name="other">
+                                {% for ac in other_accounts %}
+                                <option value="{{ac.id}}">{{ac.name}}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div> -->
+                    <div class="form-group">
+                        <label class="col-sm-3 control-label">转账金额</label>
+                        <div class="col-sm-9">
+                            <input type="text" name="balance" class="form-control"/>
+                        </div>
+                    </div> 
+              </div>
+              <div class="modal-footer">
+                <button type="submit" class="btn btn-primary">Save</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+              </div>
+          </form>
+        </div>
+      </div>
+    </div> 
+{% endblock %}
+{% block footer_js %}
+    <script type="text/javascript">
+        $(".nav li").on("click", function(){
+            self = $(this);
+            $(".nav li").each(function(i, n){
+                $(this).removeClass("active");
+                self.addClass("active")
+            })
+        })
+        function draw(data){
+            var acTable = $("#account").DataTable({
+                searching: false,
+                data: data,
+                paging:false,
+                columns: [
+                    {data: "name"},
+                    {data: "style"},
+                    {data: "balance"},
+                    {data: null, "width": "30%", "fnCreatedCell": function(nTd, sData, oData, iRow, iCol){
+                        element = $(nTd).empty();
+                        function to_ajax_form(formId, url, style, modalId){
+                            idl = oData["id"];
+                            $("#"+formId+"").ajaxForm({
+                                type: "post",
+                                url: "/account/"+style+"/"+idl+"/"+url+"/",
+                                data: {"csrfmiddlewaretoken": $("{%csrf_token%}").val()},
+                                success: function(data){
+                                    $("#account").DataTable().destroy();
+                                    ajax_get("/account/data?style="+style+"", style);
+                                    $("#"+modalId+"").find("button[data-dismiss]").trigger("click")
+                                }
+                            })
+                        }
+                        if (oData["style"] == "CUS"){
+                            bu = $('<input type="button" value="充值" class="btn btn-success btn-sm"/>')
+                                .on("click", function(){
+                                    $("#chargeCus").modal()
+                                    //客户账户充值post
+                                    to_ajax_form("chargeCusForm", "charge", "customer", "chargeCus");
+                                });
+                            bt = $('<input type="button" value="转账" class="btn btn-warning btn-sm"/>')
+                                .on("click", function(){
+                                    $("#transCus").modal()
+                                    //客户账户向公司子账户转账
+                                    to_ajax_form("transCusForm", "transfer", "customer", "transCus")
+                                })
+                            element.append(bt);
+                            element.append(bu);
+                        }
+                        else if (oData["style"]== "COM"){
+                            bu = $('<input type="button" value="转账至拍卖账户" class="btn btn-success btn-sm"/>')
+                                .on("click", function(){
+                                    $("#transCom").modal()
+                                    //向拍卖行账户转账
+                                    to_ajax_form("transComForm", "transfer", "company", "transCom");
+                                });
+                            bt = $('<input type="button" value="转账至其他账户" class="btn btn-warning btn-sm"/>')
+                                .on("click", function(){
+                                    $("#transOthers").modal()
+                                    //向其他账户转账
+                                    to_ajax_form("transOtherForm", "transothers", "company", "transOthers");
+                                })
+                            element.append(bu);
+                            element.append(bt);
+                        }else if (oData["style"]=="AMERICAN" || oData["style"]=="LOCAL"){
+                            bu = $('<input type="button" value="转账至子账户" class="btn btn-success btn-sm"/>')
+                                .on("click", function(){
+                                    if(oData["style"] != "AMERICAN"){
+                                        alert("只有美元账户可以转到公司子账户");
+                                        return false;
+                                    }
+                                    $("#transAuc").modal();
+                                    to_ajax_form("transAucForm", "transfer", "auction", "transAuc");
+                                });
+                            bt = $('<input type="button" value="转账至其他账户" class="btn btn-warning btn-sm"/>')
+                                .on("click", function(){
+                                    if(oData["style"] != "LOCAL"){
+                                        alert("只有本地账户可以转出到其他");
+                                        return false;
+                                    }
+                                    $("#transAucOther").modal();
+                                    to_ajax_form("transAucOtherForm", "transothers", "auction", "transAucOther");
+                                });
+                            element.append(bu);
+                            element.append(bt);
+
+                        }
+                    }}
+                ]
+            })
+        }
+        function ajax_get(url, style){
+            $.ajax({
+                url:url,
+                type: "get",
+                success: function(data){
+                    draw(data.data.account);
+                }
+            })
+        }
+        $(".nav li a").on("click", function(){
+            var data_url =  $(this).attr("data-url");
+            console.log(data_url);
+            $("#account").DataTable().destroy();
+            ajax_get("/account/data?style="+data_url+"", data_url);
+        })
+        //默认显示
+        ajax_get("/account/data/?style=customer", "customer");
+    </script>
+{% endblock %}
+{% block navname%}account{% endblock %}
