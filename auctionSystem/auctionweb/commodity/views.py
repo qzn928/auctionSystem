@@ -12,7 +12,7 @@ from django.template import RequestContext
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
 
-from auctionweb.models import Customer, PeelField, Commodity, Invoice, AuctionField
+from auctionweb.models import Customer, PeelField, Commodity, Invoice, AuctionField, Account
 from .forms import CommodityForm
 from auctionweb.shortcuts.ajax import ajax_success, ajax_error
 from auctionweb import mckeys
@@ -33,6 +33,16 @@ def add(request, auction_id, template_name):
             c_obj = cform.save(commit=False)
             c_obj.auction = auc_obj
             c_obj.save()
+            #根据拍卖日期创建公司子账户及更新客户账户欠款
+            try:
+                date_split = request.POST.get("auction_time").split("-")
+                son_count = '-'.join([date_split[0], date_split[1], auc_obj.name])
+                account, create = Account.objects.get_or_create(name=son_count, style="COM", defaults={"balance": 0})
+                cus_obj = customers.get(name=c_obj.customer_id)
+                cus_obj.account.balance = cus_obj.account.balance - c_obj.final_price*c_obj.number
+                cus_obj.account.save()
+            except Exception, e:
+                print str(e)
             mem.set("last_form", request.POST)
             cform = CommodityForm()
             html = render_to_string(

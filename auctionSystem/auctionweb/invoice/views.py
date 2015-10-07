@@ -3,7 +3,10 @@
 import memcache
 import json
 import datetime
+import xlwt
+import StringIO
 
+from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from django.template.loader import render_to_string
 from django.conf import settings
@@ -170,3 +173,39 @@ def add_ship_com(request):
     }
     Invoice.objects.filter(id__in=invoice_id_list).update(**update_dict)
     return ajax_success()
+
+#打印
+def fexcel(request):
+    print "111111"
+    response = HttpResponse(content_type='application/vnd.ms-excel')
+    response['Content-Disposition'] = 'attachment;filename=export_agencycustomer.xls'
+    wb = xlwt.Workbook(encoding = 'utf-8')
+    sheet = wb.add_sheet(u'最终发票清单')
+    #1st line   
+    sheet.write(0,0, '发票号')
+    sheet.write(0,1, '客户号')
+    sheet.write(0,2, '品种')
+    sheet.write(0,3, '生皮总额')
+    sheet.write(0,4, '美金总额')
+    sheet.write(0,5, '修改次数')
+    sheet.write(0,6, '修改时间')
+   
+    row = 1
+    all_final_invoice = Invoice.objects.filter(is_pre=0).order_by("invoice_nu")
+    json_list = [i.toDICT() for i in all_final_invoice]
+    for lis in json_list:
+        print lis
+        sheet.write(row,0, lis["invoice_nu"])
+        sheet.write(row,1, lis["customer_id"])
+        sheet.write(row,2, lis["goods_type"])
+        sheet.write(row,3, lis["goods_nu"])
+        sheet.write(row,4, lis["cost_sum"])
+        sheet.write(row,5, lis["modify_times"]) 
+        sheet.write(row,6, lis["modify_date"])
+        row=row + 1
+       
+    output = StringIO.StringIO()
+    wb.save(output)
+    output.seek(0)
+    response.write(output.getvalue())
+    return response

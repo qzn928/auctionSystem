@@ -29,7 +29,7 @@ class Account(models.Model):
     账户表
     '''
     name = models.CharField(max_length=30, unique=True)
-    balance = models.IntegerField()
+    balance = models.IntegerField(default=0)
     style = models.CharField(choices=ACCOUNT_TYPE, max_length=10, default="OTHER")
     def __str__(self):
         return self.name
@@ -45,6 +45,37 @@ class AuctionField(models.Model):
 
     def __str__(self):
         return self.name
+
+class TransferRecord(models.Model):
+    """
+        转账记录
+    """
+    # 转账方
+    fro = models.ForeignKey(Account)
+    # 接收方
+    to = models.ForeignKey(Account, related_name="trans_to")
+    # 转账金额
+    money = models.IntegerField()
+    # 转账日期
+    date = models.DateTimeField()
+    def toDICT(self):
+        record = []
+        fields = [f.name for f in self._meta.fields]
+        for field in fields:
+            if field == "date":
+                try:
+                    record.append((field, getattr(self, field).strftime("%Y-%m-%d %H:%m")))
+                except AttributeError:
+                    record.append((field, ''))
+            elif field in ["fro", "to"]:
+                try:
+                    record.append((field, getattr(getattr(self, field), "name")))
+                except AttributeError:
+                    record.append((field, ''))
+            else:
+                record.append((field, getattr(self, field)))
+        return dict(record)
+        
 
 class AuctionAccount(models.Model):
     '''
