@@ -5,6 +5,10 @@
 <style>
     .ceTable{text-align:center}
     .dataTables_wrapper{margin:20px}
+    .total{margin-left:17px;}
+    .total p{font-size:1.2em}
+    .total p span {padding-left:30px}
+    .total p label {color: green;}
 </style>
 {% endblock%}
 {% block content %}
@@ -33,7 +37,8 @@
             </thead>
         </table>
         <hr/>
-        <div id="countGraph" style="height:300px;width:70%;margin:0 auto">
+        <div class="total">
+            <p><label>汇总信息</label><span>客户:12 </span><span>发票数量:2000 </span><span>生皮总额:10000</span> <span>美金总额:3000</span></p>
         </div>
     </div>
 </div>
@@ -152,6 +157,12 @@
                                 $("#lotTable").DataTable().destroy();
                                 get_invoice_lot(selectAtrs[0].id)
                                 $("#lotModal").modal()
+                             }
+                        },{
+                            "sExtends": "text",
+                            "sButtonText": "导出excel",
+                            "fnClick": function(nButton, oConfig, oFlash){
+                                location.href="/invoice/out/excel";
                              }
                         }
                     ]

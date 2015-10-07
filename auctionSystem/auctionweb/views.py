@@ -11,6 +11,7 @@ from django.utils.translation import ugettext as _
 from django.views.decorators.debug import sensitive_post_parameters
 from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import csrf_protect
+from django.shortcuts import render, redirect
 
 # Avoid shadowing the login() and logout() views below.
 from django.contrib.auth import REDIRECT_FIELD_NAME, login as auth_login, logout as auth_logout
@@ -103,3 +104,4 @@ def define_check(request):
     # code.words = [sss(6)]
     code.type = 'number'
     return code.display()
+

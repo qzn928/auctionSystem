@@ -133,11 +133,20 @@
 					</a>
 				</li>
 				<li class="classic-menu-dropdown" id="nav-account">
-                    <a href="{% url 'account' %}">
-                    <i class="fa fa-gift"></i>
-					account<span class="selected">
-					</span>
+					<a data-toggle="dropdown" href="javascript:;">
+					<i class="fa fa-tasks"></i>
+					account <i class="fa fa-angle-down"></i>
 					</a>
+					<ul class="dropdown-menu pull-left">
+						<li>
+							<a href="{% url 'account' %}">
+							<i class="fa fa-bookmark-o"></i>account </a>
+						</li>
+						<li>
+							<a href="{% url 'acclog' %}">
+							<i class="fa fa-user"></i>account log</a>
+						</li>
+					</ul>
 				</li>
 			</ul>
 		</div>
@@ -268,6 +277,8 @@
 <script src="/static/assets/plugins/jquery-ui.min.js" type="text/javascript"></script>
 <script src="/static/assets/admin/layout/scripts/quick-sidebar.js" type="text/javascript"></script>
 <script src="/static/js/echarts-all.js" type="text/javascript"></script>
+<script src="/static/js/jquery.validate.min.js" type="text/javascript"></script>
+<script src="/static/js/additional-methods.min.js" type="text/javascript"></script>
 <!-- END CORE PLUGINS -->
 
 <script src="/static/assets/scripts/metronic.js" type="text/javascript"></script>
