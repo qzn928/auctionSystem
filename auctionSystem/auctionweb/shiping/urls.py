@@ -18,5 +18,6 @@ urlpatterns = patterns('auctionweb.shiping.views',
     url(r'^ship/list/$', "ship_list", {"template_name":"auctionweb/shiping/ship_list.html"}, name="ship_list"),
     url(r'^ship/classify/$', "ship_classify", {"template_name":"auctionweb/shiping/ship_classify.html"}, name="ship_classify"),
     url(r'^ship/harbour/count/$', "ship_harbour_count", {"template_name":"auctionweb/shiping/ship_harbour_count.html"}, name="ship_harbour_count"),
-    url(r'^unpaid/items/$', "unpaid_list", {"template_name":"auctionweb/shiping/unpaid_list.html"}, name="unpaid_list")
+    url(r'^unpaid/items/$', "unpaid_list", {"template_name":"auctionweb/shiping/unpaid_list.html"}, name="unpaid_list"),
+    url(r'^export/excel/$', "export_ship_excel")
 )

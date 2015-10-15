@@ -141,14 +141,13 @@
                 data: data,
                // "ajaxSource":"{% url 'fvjson' %}",
                 "oTableTools":{
-                    "sRowSelect": "single",
+                    "sRowSelect": "multi",
                     "aButtons": [
                         {
                             "sExtends": "text",
                             "sButtonText": "view",
                             "fnClick": function(nButton, oConfig, oFlash){
                                 var ott = TableTools.fnGetInstance("finTable");
-                                console.log(ott)
                                 var selectAtrs = ott.fnGetSelectedData();
                                 if (selectAtrs.length!=1){
                                     alert("请选择一行进行查看")
@@ -162,7 +161,25 @@
                             "sExtends": "text",
                             "sButtonText": "导出excel",
                             "fnClick": function(nButton, oConfig, oFlash){
-                                location.href="/invoice/out/excel";
+                                var ott = TableTools.fnGetInstance("finTable");
+                                var selectAtrs = ott.fnGetSelectedData();
+                                var id_array = []
+                                for (i in selectAtrs){
+                                    id_array.push(selectAtrs[i].id)
+                                }
+                                $.ajax({
+                                    type: "post",
+                                    url: "/invoice/export/excel",
+                                    data: {data:JSON.stringify({
+                                        "id_lis": id_array, 
+                                        }),
+                                        "csrfmiddlewaretoken": $("{%csrf_token%}").val()},
+                                    success: function(data){
+                                        if (data.success){
+                                            location.href = "/invoice/export/excel"
+                                        }
+                                    }
+                                })
                              }
                         }
                     ]

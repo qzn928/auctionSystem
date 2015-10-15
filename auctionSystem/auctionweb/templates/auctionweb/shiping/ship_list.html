@@ -155,6 +155,7 @@
             var invoice = $("#invoice").DataTable({
                 "paging": false,
                 "searching": false,
+                "info": false,
                 "ajaxSource":"/shiping/invoice/"+ship_nu+"/",
                 "columns": [
                     {"data": "auction"},
@@ -169,46 +170,73 @@
             "searching": true,
             "sDom": '<"toolsbar"><"H"TfrC>t<"F"ip>',
             "oTableTools":{
-                "sRowSelect": "single",
+                "sRowSelect": "multi",
                 "aButtons":[
                     {
                         "sExtends": "text",
                         "sButtonText": "add info",
                         "fnClick": function(nButton, oConfig, oFlash){
-                            var ott = ship.row(".selected")
-                            if(ott.length!=1){
+                            var ott = TableTools.fnGetInstance("ship");
+                            var selectAtrs = ott.fnGetSelectedData();
+                            if(selectAtrs.length!=1){
                                 alert("请选择一行进行添加!!!")
-                            }else{
-                                $("#shipModal").modal();
-                                var select_ship_id = ott.data().id;
-                                $("#addShipForm").ajaxForm({
-                                    type: "post",
-                                    url: "/shiping/ship/info/"+select_ship_id+"/",
-                                    success: function(data){
-                                        if (!data.success){
-                                            alert("failed!!!")
-                                            return
-                                        }
-                                        ship.ajax.reload()
-                                        $("#shipModal").find("button[data-dismiss]").trigger("click")
-                                    }
-                                })
+                                return 
                             }
+                            $("#shipModal").modal();
+                            var select_ship_id =selectAtrs[0].id;
+                            $("#addShipForm").ajaxForm({
+                                type: "post",
+                                url: "/shiping/ship/info/"+select_ship_id+"/",
+                                success: function(data){
+                                    if (!data.success){
+                                        alert("failed!!!")
+                                        return
+                                    }
+                                    ship.ajax.reload()
+                                    $("#shipModal").find("button[data-dismiss]").trigger("click")
+                                }
+                            })
                             
                         }
                     },{
                         "sExtends": "text",
                         "sButtonText": "view",
                         "fnClick": function(nButton, oConfig, oFlash){
-                            var ott = ship.row(".selected")
-                            if(ott.length!=1){
+                            if(selectAtrs.length!=1){
                                 alert("请选择一行进行查看!!!")
-                            }else{
-                                $("#invoiceModal").modal();
-                                $("#invoice").DataTable().destroy();
-                                create_in_table(ott.data().id);
+                                return 
                             }
-                            
+                            $("#invoiceModal").modal();
+                            $("#invoice").DataTable().destroy();
+                            create_in_table(selectAtrs[0].id);
+                        }
+                    },{
+                        "sExtends": "text",
+                        "sButtonText": "导出excel",
+                        "fnClick": function(nButton, oConfig, oFlash){
+                            var ott = TableTools.fnGetInstance("ship");
+                            var selectAtrs = ott.fnGetSelectedData();
+                            var id_array = []
+                            if (selectAtrs.length==0){
+                                id_array = ["all"]
+                            }else{
+                                for (i in selectAtrs){
+                                    id_array.push(selectAtrs[i].id)
+                                }
+                            }
+                            $.ajax({
+                                type: "post",
+                                url: "/shiping/export/excel",
+                                data: {data:JSON.stringify({
+                                    "id_lis": id_array, 
+                                    }),
+                                    "csrfmiddlewaretoken": $("{%csrf_token%}").val()},
+                                success: function(data){
+                                    if (data.success){
+                                        location.href = "/ship/export/excel"
+                                    }
+                                }
+                            })
                         }
                     }
                 ]

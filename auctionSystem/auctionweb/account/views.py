@@ -3,6 +3,8 @@
 import memcache
 import json
 import datetime
+import xlwt
+import StringIO
 
 from django.http import HttpResponse, Http404
 from django.shortcuts import render, redirect
@@ -199,3 +201,29 @@ def acclog_data(request):
     acclogs = TransferRecord.objects.all()
     data = [i.toDICT() for i in acclogs]
     return ajax_success(data) 
+
+def account_export(request):
+    if request.method != "POST":
+        with open("/tmp/account.xls") as f:
+            data = f.read()
+        response = HttpResponse(data, content_type='application/vnd.ms-excel')
+        response['Content-Disposition'] = 'attachment;filename=account.xls'
+        return response
+    data = json.loads(request.POST.get("data"))
+    wb = xlwt.Workbook(encoding = 'utf-8')
+    sheet = wb.add_sheet(u'账户清单')
+    th = ["账户名称", "账户类型", "账户余额"]
+    [sheet.write(0, i, th[i]) for i in range(len(th))]
+    row = 1
+    style = data.get("style")
+    if style == "AMERICAN" or style == "LOCAL":
+        accounts = AuctionAccount.objects.all()
+    else:
+        accounts = Account.objects.filter(style=style)
+    for ac in accounts.filter(id__in=data.get("account_id_lis")):
+        sheet.write(row, 0, ac.name)
+        sheet.write(row, 1, ac.style)
+        sheet.write(row, 2, ac.balance)
+        row = row + 1
+    wb.save("/tmp/account.xls")
+    return ajax_success()

@@ -80,6 +80,41 @@ def ship_data(request):
         back_data.append(data)
     return ajax_success(back_data)
 
+def export_ship_excel(request):
+    '''导出货运excel列表'''
+    if request.method != "POST":
+        with open("/tmp/ship_list.xls") as f:
+            data = f.read()
+        response = HttpResponse(data, content_type='application/vnd.ms-excel')
+        response['Content-Disposition'] = 'attachment;filename=ship_list.xls'
+        return response
+    data = json.loads(request.POST.get("data"))
+    wb = xlwt.Workbook(encoding = 'utf-8')
+    sheet = wb.add_sheet(u'货运列表清单')
+    th = [
+        "货运号", "拍卖会", "数量", "原始发票总额", "国外货运公司",
+        "地接公司", "清关公司", "主单号", "件数", "计费重量", 
+        "起飞日期", "落地日期", "货运状态", "清关日期", "清关状态"
+    ]
+    [sheet.write(0, i, th[i]) for i in range(len(th))]
+    ship_obj_list = Shiping.objects.all()
+    if data.get("id_lis") and data.get("id_lis")[0] != "all":
+        ship_obj_list = ship_obj_list.filter(id__in=data.get("id_lis")).order_by("shiping_nu")
+    property = [
+        "ship_nu", "auction_name", "com_num", "invoice_count", "foreign_ship" ,
+        "delivery_company", "clearance_company", "master_nu", "branch_nu",
+        "ship_num", "charge_weight", "takeoff_time", "arrive_time",
+        "ship_status", "clear_time", "clear_status"
+    ]
+    json_list = [i.toDICT() for i in all_final_invoice]
+    row = 1
+    for ship_obj in ship_obj_list:
+        data = ship_obj.toDICT()
+        [sheet.write(row, i, lis[property[i]]) for i in range(len(property))]
+        row = row + 1
+    wb.save("/tmp/final_invoice.xls")
+    return ajax_success() 
+
 def add_ship_info(request, ship_nu):
     '''接收ship的post信息，并保存'''
     try:

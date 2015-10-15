@@ -15,4 +15,5 @@ urlpatterns = patterns('auctionweb.account.views',
     url(r'^auction/(?P<auc_id>\d+)/transothers/$', "auc_transothers", name="auc_transothers"),
     url(r'^log/$', "acclog", {"template_name": "auctionweb/account/acclog.html"}, name="acclog"),
     url(r'^log/data/$', "acclog_data", name="acclog_data"),
+    url(r'^export/$', "account_export", name="account_export"),
 )
