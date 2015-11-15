@@ -40,6 +40,9 @@
 <link rel="shortcut icon" href="favicon.ico"/>
     <style>
         .row{margin-left:0px;margin-right:0px;}
+        body{
+            font-family: "Microsoft YaHei" ! important;
+        }
     </style>
 {% block header_js %}
 {% endblock %}
@@ -65,7 +68,7 @@
 				<li class="classic-menu-dropdown" id="nav-commodity">
                     <a href="{% url 'clist'%}">
                     <i class="fa fa-gift"></i>
-					Commodity<span class="selected">
+					Lot<span class="selected">
 					</span>
 					</a>
 				</li>
@@ -81,7 +84,11 @@
 						</li>
 						<li>
 							<a href="{% url 'fvlist' %}">
-							<i class="fa fa-user"></i> final-invoice </a>
+							<i class="fa fa-bookmark-o"></i> final-invoice </a>
+						</li>
+						<li>
+							<a href="{% url 'commission' %}">
+							<i class="fa fa-bookmark-o"></i>commission </a>
 						</li>
 					</ul>
 				</li>

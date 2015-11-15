@@ -3,6 +3,8 @@
 import datetime
 
 from django.db import models
+from django.dispatch import receiver
+from django.db.models.signals import pre_save, post_save
 
 '''
 auctionSystem 总model文件
@@ -43,6 +45,17 @@ class AuctionField(models.Model):
     # 货币种类
     currency = models.CharField(max_length=50)
 
+    def save(self, *args, **kwargs):
+        try:
+            account_obj_a = AuctionAccount(name=self.name, auction=self, style="AMERICAN")
+            account_obj_l = AuctionAccount(name=self.name, auction=self, style="LOCAL")
+            account_obj_a.save()
+            account_obj_l.save()
+        except Exception, e:
+            print "1111111111111"
+            print str(e)
+        super(AuctionField, self).save(*args, **kwargs)
+
     def __str__(self):
         return self.name
 
@@ -82,7 +95,7 @@ class AuctionAccount(models.Model):
     拍卖会账户
     '''
     name = models.CharField(max_length=30)
-    balance = models.IntegerField()
+    balance = models.IntegerField(default=0)
     style = models.CharField(choices=AUCTION_ACCOUNT_TYPE, max_length=10, default="AMERICAN")
     auction = models.ForeignKey(AuctionField)
     def __str__(self):
@@ -101,7 +114,7 @@ class Variety(models.Model):
 class Customer(models.Model):
     """客户类"""
     # 客户名称
-    name = models.CharField(max_length=50) 
+    name = models.CharField(max_length=50, unique=True) 
     # 客户编号
     identifier = models.CharField(max_length=20) 
     # 客户电话
@@ -110,6 +123,15 @@ class Customer(models.Model):
     address = models.TextField() 
     # 客户账户
     account = models.OneToOneField(Account, null=True)
+
+    def save(self, *args, **kwargs):
+        try:
+            account_obj = Account(name=self.name, style="CUS")
+            account_obj.save()
+            self.account = account_obj
+        except:
+            pass
+        super(Customer, self).save(*args, **kwargs)
 
     def __str__(self):
         return self.name
@@ -154,6 +176,15 @@ class Delivery(models.Model):
     name = models.CharField(max_length=50, unique=True)
     account = models.OneToOneField(Account)
     
+    def save(self, *args, **kwargs):
+        try:
+            account_obj = Account(name=self.name, style="OTHER")
+            account_obj.save()
+            self.account = account_obj
+        except:
+            pass
+        super(Delivery, self).save(*args, **kwargs)
+
     def __str__(self):
         return self.name
     
@@ -172,6 +203,15 @@ class ForeignShip(models.Model):
     # 货币种类
     currency = models.CharField(max_length=50)
     account = models.OneToOneField(Account, null=True)
+
+    def save(self, *args, **kwargs):
+        try:
+            account_obj = Account(name=self.name, style="OTHER")
+            account_obj.save()
+            self.account = account_obj
+        except:
+            pass
+        super(ForeignShip, self).save(*args, **kwargs)
 
     def __str__(self):
         return self.name
@@ -429,7 +469,7 @@ class Commodity(models.Model):
     # 评价
     evaluation =  models.CharField(max_length=100) 
     # 备注
-    remarks = models.CharField(max_length=100) 
+    remarks = models.CharField(max_length=100, null=True, blank=True) 
     # 发票生成标志
     is_invoice = models.IntegerField(default=0) 
     # 削皮场

@@ -8,8 +8,7 @@ from auctionweb.models import *
 
 
 class CustomerAdmin(object):
-    pass
-
+    exclude = ('account',)
 xadmin.site.register(Customer, CustomerAdmin)
 
 
@@ -60,6 +59,6 @@ class AccountAdmin(object):
 xadmin.site.register(Account, AccountAdmin)
 
 class AuctionAccountAdmin(object):
-    pass
+    fields = ("name", "style", "balance")
 
 xadmin.site.register(AuctionAccount, AuctionAccountAdmin)

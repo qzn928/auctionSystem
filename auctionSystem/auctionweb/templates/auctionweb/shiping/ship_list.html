@@ -202,6 +202,8 @@
                         "sExtends": "text",
                         "sButtonText": "view",
                         "fnClick": function(nButton, oConfig, oFlash){
+                            var ott = TableTools.fnGetInstance("ship");
+                            var selectAtrs = ott.fnGetSelectedData();
                             if(selectAtrs.length!=1){
                                 alert("请选择一行进行查看!!!")
                                 return 
@@ -226,14 +228,14 @@
                             }
                             $.ajax({
                                 type: "post",
-                                url: "/shiping/export/excel",
+                                url: "/shiping/export/excel/",
                                 data: {data:JSON.stringify({
                                     "id_lis": id_array, 
                                     }),
                                     "csrfmiddlewaretoken": $("{%csrf_token%}").val()},
                                 success: function(data){
                                     if (data.success){
-                                        location.href = "/ship/export/excel"
+                                        location.href = "/shiping/export/excel/"
                                     }
                                 }
                             })

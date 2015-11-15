@@ -47,16 +47,20 @@
         <h4 class="modal-title" id="myModalLabel">添加削皮场</h4>
       </div>
       <div style="display:none;margin-left:20px" id="addPeelInform">
-         <form class="form-inline" id="submit_form" method="POST" style="margin-top:20px">
+         <form class="" id="submit_form" method="POST" style="margin-top:20px">
             <div class="form-group">
-                <label for="peel_field">削皮场</label>
-                <select name="peel_field" id="peel_field" class="form-contorl">
-                {% for peel in peel_list %}
-                    <option value="{{ peel.pk }}">{{ peel.name }}</option>
-                {% endfor %}
-                </select>
-            </div>
-            <div class="form-group">
+                <div class="row">
+                    <div class="col-md-4">
+                        <label for="peel_field">削皮场</label>
+                    </div>
+                    <div class="col-md-6">
+                        <select name="peel_field" id="peel_field" class="form-contorl">
+                        {% for peel in peel_list %}
+                            <option value="{{ peel.pk }}">{{ peel.name }}</option>
+                        {% endfor %}
+                        </select>
+                    </div>
+                </div>
                 <label for="peel_inform">削皮指示</label>
                 <select name="peel_inform" id="peel_inform" class="form-contorl">
                 {% for peel_inform in peel_inform_list %}
@@ -71,8 +75,6 @@
                     <option value="2">2</option>
                     <option value="2">3</option>
                 </select>
-            </div>
-            <div class="form-group">
                 <label for="peel_time_flag">是否签到</label>
                 <select name="peel_time_flag" id="peel_time_flag" class="form-contorl">
                     <option value="0">未签到</option>
@@ -82,8 +84,6 @@
             <div class="form-group">
                 <label for="peel_comment">备注</label>
                 <textarea name="peel_comment"></textarea>
-            </div>
-            <div>
                 <input type="submit" value="保存" class="btn btn-success" />
                 <input type="button" value="取消" class="btn btn-default" id="cancel"/>
             </div>

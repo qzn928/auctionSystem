@@ -3,13 +3,14 @@
 import memcache
 import json
 import datetime
+import xlwt
 
 from django.shortcuts import render, redirect
 from django.template.loader import render_to_string
 from django.conf import settings
 from django.template import RequestContext
 from django.views.decorators.csrf import csrf_exempt
-from django.http import Http404
+from django.http import Http404, HttpResponse
 from django.db.models import Count, Avg, Sum
 
 from auctionweb.models import * 
@@ -32,6 +33,7 @@ def unshipped_list(request, template_name):
 def unshipped_data(request):
     '''unshipped 数据信息获取渲染datatables'''
     all_invoice_obj = Invoice.objects.filter(is_pre=0, is_ship=0)
+    print all_invoice_obj
     back_data = []
     for v in all_invoice_obj:
         data = {}
@@ -93,7 +95,7 @@ def export_ship_excel(request):
     sheet = wb.add_sheet(u'货运列表清单')
     th = [
         "货运号", "拍卖会", "数量", "原始发票总额", "国外货运公司",
-        "地接公司", "清关公司", "主单号", "件数", "计费重量", 
+        "地接公司", "清关公司", "主单号", "分单号", "件数", "计费重量", 
         "起飞日期", "落地日期", "货运状态", "清关日期", "清关状态"
     ]
     [sheet.write(0, i, th[i]) for i in range(len(th))]
@@ -101,18 +103,19 @@ def export_ship_excel(request):
     if data.get("id_lis") and data.get("id_lis")[0] != "all":
         ship_obj_list = ship_obj_list.filter(id__in=data.get("id_lis")).order_by("shiping_nu")
     property = [
-        "ship_nu", "auction_name", "com_num", "invoice_count", "foreign_ship" ,
+        "shiping_nu", "auction_name", "com_num", "invoice_count", "foreign_ship" ,
         "delivery_company", "clearance_company", "master_nu", "branch_nu",
         "ship_num", "charge_weight", "takeoff_time", "arrive_time",
         "ship_status", "clear_time", "clear_status"
     ]
-    json_list = [i.toDICT() for i in all_final_invoice]
     row = 1
     for ship_obj in ship_obj_list:
         data = ship_obj.toDICT()
-        [sheet.write(row, i, lis[property[i]]) for i in range(len(property))]
+        data.update({"ship_status": ship_obj.get_ship_status})
+        data.update({"clear_status": ship_obj.get_clear_status})
+        [sheet.write(row, i, data[property[i]]) for i in range(len(property))]
         row = row + 1
-    wb.save("/tmp/final_invoice.xls")
+    wb.save("/tmp/ship_list.xls")
     return ajax_success() 
 
 def add_ship_info(request, ship_nu):

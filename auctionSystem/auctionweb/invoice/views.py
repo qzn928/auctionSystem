@@ -199,3 +199,7 @@ def fexcel(request):
         row = row + 1
     wb.save("/tmp/final_invoice.xls")
     return ajax_success() 
+
+def commission(request, template_name):
+    '''佣金模块'''
+    return render(request, template_name, {})

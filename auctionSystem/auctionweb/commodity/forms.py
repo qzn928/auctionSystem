@@ -17,5 +17,5 @@ class CommodityForm(forms.ModelForm):
             "peel_field", "auction", "is_invoice", 
             "peel_inform", "invoice", "peel_time",
             "out_peel_time", "delivery_time", "peel_level",
-            "peel_time_flag", "peel_mo_num", "peel_mo_time"
+            "peel_time_flag", "peel_mo_num", "peel_mo_time", "peel_comment"
         )
