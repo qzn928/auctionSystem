@@ -12,7 +12,9 @@ from django.template import RequestContext
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
 
-from auctionweb.models import Customer, PeelField, Commodity, Invoice, AuctionField, Account
+from auctionweb.models import \
+    Customer, PeelField, Commodity, Invoice, AuctionField, Account,\
+    LotSize, LotLevel, LotClear, LotColor
 from .forms import CommodityForm
 from auctionweb.shortcuts.ajax import ajax_success, ajax_error
 from auctionweb import mckeys
@@ -129,10 +131,12 @@ def list(request, template_name):
     mem = memcache.Client(settings.MEMCACHES)
     begin_rate = mem.get("begin_rate")
     com_rate = mem.get("commpression_rate")
+    an_rmb_rate = mem.get("an_rmb_rate")
     auction_list = AuctionField.objects.all().order_by("id")
     C = {
         "begin_rate": begin_rate if begin_rate else '',
         "com_rate": com_rate if com_rate else '',
+        "an_rmb_rate": an_rmb_rate,
         "auctions": auction_list
     }
     print template_name
@@ -163,12 +167,13 @@ def get_select(request):
         variety = [v.name for v in auction_obj.variety_set.all()]
         return ajax_success({"id_variety": variety})
     auction_name_list = [auc.name for auc in AuctionField.objects.all()]
+    all_obj_def = lambda x: x.objects.all()
     choice_data = {
         "id_auction": auction_name_list,
-        "id_size": ['1-20', '20-40', '50-60'],
-        "id_level": ["特等品", "一级品", "二级品"],
-        "id_color": ["red", "white", "yellow", "golden"],
-        "id_definition": ["模糊", "清晰", "微模糊", "微清晰"],
+        "id_size": [i.size for i in all_obj_def(LotSize)],
+        "id_level": [i.level for i in all_obj_def(LotLevel)],
+        "id_color": [i.color for i in all_obj_def(LotColor)],
+        "id_definition": [i.definition for i in all_obj_def(LotClear)],
         "id_sex": ["female", "male"]
     }
     return ajax_success(choice_data)

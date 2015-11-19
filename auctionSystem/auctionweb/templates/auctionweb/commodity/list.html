@@ -24,9 +24,9 @@
             <select name="auction" id="auction" style="margin-bottom:8px;width:200px">
                 {% for auction in auctions %}
                     {% if forloop.first %}
-                    <option value="{{auction.pk}}" selected>{{auction.name}}</option>
+                    <option value="{{auction.pk}}" data-dollar="{{auction.is_dollar}}" selected>{{auction.name}}</option>
                     {% else %}
-                    <option value="{{auction.pk}}">{{auction.name}}</option>
+                    <option value="{{auction.pk}}" data-dollar="{{auction.is_dollar}}">{{auction.name}}</option>
                     {% endif %}
                 {% endfor %}
             </select>
@@ -97,20 +97,26 @@
         <form class="form-horizontal" role="form" action="{% url 'cinvoice' %}" id="voaddForm"> 
           <div class="modal-body">
                 <div class="form-body" style="padding-bottom:0px">
-                    <div class="form-group">
+                    <div class="form-group" id="beginRate">
                         <label class="col-sm-3 control-label">初始汇率</label>
                         <div class="col-sm-9"> 
-                            <input type="text" name="newRate" id="newRate" class="form-control" value="{{begin_rate}}" placeholder="must"/>
+                            <input type="text" name="newRate"  id="newRate" class="form-control" value="{{begin_rate}}" placeholder="must" require/>
                         </div>
                     </div>
                     <div class="form-group">
                         <label class="col-sm-3 control-label">佣金比例</label>
                         <div class="col-sm-9"> 
-                            <input type="text" name="com_rate" id="comRate" class="form-control" value="{{com_rate}}" placeholder="must"/>
+                            <input type="text" name="com_rate" id="comRate" class="form-control" value="{{com_rate}}" placeholder="must" require/>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-3 control-label">美金对人民币汇率</label>
+                        <div class="col-sm-9"> 
+                            <input type="text" name="an_rmb_rate" id="anRmbRate" class="form-control" value="{{an_rmb_rate}}" require  placeholder="must"/>
                         </div>
                     </div>
                     <div style="margin-left:150px">
-                        <span class="help-inline" style="display:none;color:red" id="warning">初始汇率和佣金比例都不能为空</span>
+                        <span class="help-inline" style="display:none;color:red" id="warning">美元兑人民币汇率和佣金比例都不能为空</span>
                     </div>
                 </div>
           </div>
@@ -160,6 +166,13 @@
                             "sExtends": "text",
                             "sButtonText": "create preinvoice",
                             "fnClick": function(nButton, oConfig, oFlash){
+                                console.log($('#auction option:selected').attr("data-dollar"))
+                                var auction_is_dollar = $('#auction option:selected').attr("data-dollar");
+                                if (auction_is_dollar == "True"){
+                                    $("#beginRate").css("display", "none")
+                                }else{
+                                    $("#beginRate").css("display", "block")
+                                }
                                 var ott = lotTable.row(".selected")
                                 if(ott.length!=1){
                                     alert("至少选择一列!")
@@ -179,18 +192,20 @@
                                     $("#invoiceSumit").on("click", function(){
                                         var newRate = $("#newRate").val();
                                         var comRate = $("#comRate").val();
-                                        if (!newRate || !comRate){
+                                        var an_rmb_rate = $("#anRmbRate").val();
+                                        if (!comRate || !an_rmb_rate){
                                             $("#warning").css("display", "block");
                                             return false
                                         }
                                         var post_data = {
                                             "all_lot_nu": lot_nu_arr, 
-                                            "new_rate": newRate, 
+                                            "begin_exchange_rate": newRate, 
                                             "customer_id":customer_id[0],
-                                            "com_rate": comRate,
-                                           // "csrfmiddlewaretoken": $("{%csrf_token%}").val()
-                                        };
-                                        $.post("{% url 'cinvoice' %}", {data:JSON.stringify(post_data)}, function(data){
+                                            "commission_rate": comRate,
+                                            "an_rmb_rate": an_rmb_rate
+                                            }
+                                        $.post("{% url 'cinvoice' %}", {data:JSON.stringify(post_data),"csrfmiddlewaretoken": $("{%csrf_token%}").val()},
+                                            function(data){
                                             if (!data.success){
                                                 alert(data.error_message)
                                             }else{

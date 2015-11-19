@@ -5,7 +5,7 @@ import os
 from django.conf.urls import patterns, include, url
 
 urlpatterns = patterns('auctionweb.invoice.views',
-    url(r'^add/$', "voadd", {"template_name": "auctionweb/invoice/add.html"}, name="cinvoice"),
+    url(r'^add/$', "begin_invoice_add", {"template_name": "auctionweb/invoice/add.html"}, name="cinvoice"),
     url(r'^list/', "vlist", {"template_name": "auctionweb/invoice/vlist.html"}, name="vlist"),
     url(r'^flist/', "fvlist", {"template_name": "auctionweb/invoice/fvlist.html"}, name="fvlist"),
     url(r'^export/excel', "fexcel"),

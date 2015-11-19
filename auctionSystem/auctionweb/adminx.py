@@ -62,3 +62,25 @@ class AuctionAccountAdmin(object):
     fields = ("name", "style", "balance")
 
 xadmin.site.register(AuctionAccount, AuctionAccountAdmin)
+
+class LotSizeAdmin(object):
+    pass
+xadmin.site.register(LotSize, LotSizeAdmin)
+
+class LotLevelAdmin(object):
+    pass
+xadmin.site.register(LotLevel, LotLevelAdmin)
+
+class LotColorAdmin(object):
+    pass
+xadmin.site.register(LotColor, LotColorAdmin)
+
+class LotClearAdmin(object):
+    pass
+xadmin.site.register(LotClear, LotClearAdmin)
+
+class AuctionFormulaAdmin(object):
+    pass
+
+xadmin.site.register(AuctionFormula, AuctionFormulaAdmin)
+

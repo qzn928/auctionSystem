@@ -26,6 +26,42 @@ AUCTION_ACCOUNT_TYPE = (
     ("LOCAL", u"本地账户")
 )
 
+class LotSize(models.Model):
+    '''
+    LOT的大小配置表
+    '''
+    size = models.CharField(max_length=30)
+
+    def __str__(self):
+        return self.size
+
+class LotLevel(models.Model):
+    '''
+    LOT的等级配置表
+    '''
+    level = models.CharField(max_length=30)
+
+    def __str__(self):
+        return self.level
+
+class LotColor(models.Model):
+    '''
+    LOT的颜色配置表
+    '''
+    color = models.CharField(max_length=30)
+
+    def __str__(self):
+        return self.color
+
+class LotClear(models.Model):
+    '''
+    LOT的清晰度
+    '''
+    definition = models.CharField(max_length=30)
+    def __str__(self):
+        return self.definition
+    
+
 class Account(models.Model):
     '''
     账户表
@@ -44,6 +80,7 @@ class AuctionField(models.Model):
     name = models.CharField(max_length=50, unique=True)
     # 货币种类
     currency = models.CharField(max_length=50)
+    is_dollar = models.BooleanField(default=False)
 
     def save(self, *args, **kwargs):
         try:
@@ -58,6 +95,31 @@ class AuctionField(models.Model):
 
     def __str__(self):
         return self.name
+
+class AuctionFormula(models.Model):
+    '''
+    拍卖场发票的计算公司配置表
+    '''
+    auction = models.ForeignKey(AuctionField)
+    #美金总额计算公式(初始发票, sex male)
+    pre_invoice_dollar_male = models.CharField(max_length=500)
+    #美金总额计算公式(初始发票, sex female)
+    pre_invoice_dollar_female = models.CharField(max_length=500)
+    #生皮总额计算公式(初始发票, sex male)
+    pre_invoice_cost_male = models.CharField(max_length=500)
+    #生皮总额计算公式(初始发票, sex female)
+    pre_invoice_cost_female = models.CharField(max_length=500)
+    #美金总额计算公式(最终发票, sex male)
+    final_invoice_dollar_male = models.CharField(max_length=500)
+    #美金总额计算公式(最终发票, sex female)
+    final_invoice_dollar_female = models.CharField(max_length=500)
+    #生皮总额计算公式(最终发票, sex male)
+    final_invoice_cost_male = models.CharField(max_length=500)
+    #生皮总额计算公式(最终发票, sex female)
+    final_invoice_cost_female = models.CharField(max_length=500)
+
+    def __str__(self):
+        return self.auction.name
 
 class TransferRecord(models.Model):
     """
@@ -346,7 +408,7 @@ class Invoice(models.Model):
     # 最终汇率
     final_exchange_rate = models.FloatField(null=True) 
     # 初始汇率
-    begin_exchange_rate = models.FloatField() 
+    begin_exchange_rate = models.FloatField(null=True, blank=True) 
     # 佣金比例
     commission_rate = models.FloatField(null=True) 
     # 修改次数
@@ -367,6 +429,8 @@ class Invoice(models.Model):
     harbour = models.ForeignKey(Harbour, null=True)
     # 毛重
     not_net_weight = models.IntegerField(null=True) 
+    # 美金对人民币汇率
+    an_rmb_rate = models.FloatField(null=True)
 
 
     def __str__(self):

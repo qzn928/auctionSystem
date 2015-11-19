@@ -128,9 +128,9 @@
                                     all_lot_nu.push(n.lot)
                                 })
                                 console.log(all_lot_nu)
-                                $.post("/invoice/modify/lot/"+invoice_id+"", {data:JSON.stringify(all_lot_nu)}, function(data){
+                                $.post("/invoice/modify/lot/"+invoice_id+"/", {data:JSON.stringify(all_lot_nu)}, function(data){
                                     if (!data.success){
-                                        alert(data.errors)
+                                        alert(data.error_message)
                                     }else{
                                        $("#lotModal").find("button[data-dismiss]").trigger("click")
                                     }

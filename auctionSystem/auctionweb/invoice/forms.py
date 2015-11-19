@@ -14,10 +14,9 @@ class InvoiceForm(forms.ModelForm):
         fields = (
             "invoice_nu",
             "customer_id",
-            "goods_nu",
-            "dollar_sum",
-            "cost_sum",
-            "begin_exchange_rate"
+            "begin_exchange_rate",
+            "an_rmb_rate",
+            "commission_rate"
         )
 
 class FinalInvoiceForm(forms.ModelForm):

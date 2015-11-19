@@ -40,16 +40,23 @@ def vlist(request, template_name):
 
 def create_final_invoice(request):
     '''生成最终发票'''
-    print request.POST
     invoice_list = json.loads(request.POST.get("data", ''))
     error = False
     for idl in invoice_list:
         try:
            invoice_obj = Invoice.objects.get(pk=idl)
+           com_list = invoice_obj.commodity_set.all()
         except Invoice.DoesNotExist:
             error = True
         else:
+            print invoice_obj.toDICT()
+            goods_nu, dollar_sum, cost_sum = invoice_formula(com_list, invoice_obj.toDICT(), False)
+            print goods_nu, "222222222222"
+            return
             invoice_obj.is_pre = 0
+            invoice_obj.goods_nu = goods_nu
+            invoice_obj.dollar_sum = dollar_sum
+            invoice_obj.cost_sum = cost_sum
             invoice_obj.save()
     if not error:
         return ajax_success()
@@ -60,34 +67,74 @@ def fvlist(request, template_name):
     '''显示最终发票列表'''
     return render(request, template_name)
 
+def invoice_formula(com_list, post_data=None, is_pre=True):
+    formula_objs = AuctionFormula.objects.all()
+    goods_sum, dollar_sum, cost_sum = 0, 0, 0
+    if com_list:
+        auction = com_list[0].auction
+        try:
+            formula_obj = formula_objs.get(auction=auction)
+        except AuctionFormula.DoesNotExist:
+            print "formula does not exist"
+            return '', '', ''
+    for com in com_list:
+        goods_sum += com.number
+        args = com.toDICT()
+        if is_pre:
+            args["begin_exchange_rate"] = post_data.get("begin_exchange_rate")
+        else:
+            args["final_exchange_rate"] = post_data.get("final_exchange_rate")
+        args["commission_rate"] = post_data.get("commission_rate")
+        args["an_rmb_rate"] = post_data.get("an_rmb_rate")
+        if com.sex == "male" and is_pre:
+            dollar_sum += eval(formula_obj.pre_invoice_dollar_male.format(**args))
+            cost_sum += eval(formula_obj.pre_invoice_cost_male.format(**args))
+        elif com.sex == "male" and not is_pre:
+            dollar_sum += eval(formula_obj.final_invoice_dollar_male.format(**args))
+            cost_sum += eval(formula_obj.final_invoice_cost_male.format(**args))
+        elif com.sex == "female" and is_pre:
+            dollar_sum += eval(formula_obj.pre_invoice_dollar_female.format(**args))
+            cost_sum += eval(formula_obj.pre_invoice_cost_female.format(**args))
+        else:
+            dollar_sum += eval(formula_obj.final_invoice_dollar_female.format(**args))
+            cost_sum += eval(formula_obj.final_invoice_cost_female.format(**args))
+    return  goods_sum, dollar_sum, cost_sum
+
+            
 @csrf_exempt    
-def voadd(request, template_name):
+def begin_invoice_add(request, template_name):
     '''接收post请求，生成初始发票'''
     if request.method == "POST":
         post_data = json.loads(request.POST.get("data", ''))
         all_lot_nu = post_data.get("all_lot_nu")
-        new_rate = post_data.get("new_rate")
-        com_rate = post_data.get("com_rate")
         comm_list = Commodity.objects.filter(lot__in=all_lot_nu)
         invoice_nu = Invoice.get_last_nu()
         form_data = {
             "customer_id": post_data.get("customer_id"),
-            "begin_exchange_rate": new_rate,
             "invoice_nu": invoice_nu,
-            "goods_nu": 100,
-            "dollar_sum": 3000,
-            "cost_sum": 2000,
-            "commission_rate": com_rate
+            "an_rmb_rate": post_data.get("an_rmb_rate"),
+            "commission_rate": post_data.get("commission_rate")
         }
+        if post_data.get("begin_exchange_rate"):
+            form_data["begin_exchange_rate"] = post_data.get("begin_exchange_rate")
         iform = InvoiceForm(form_data)
         if iform.is_valid():
             invoice_com = iform.save(commit=False)
+            goods_nu, dollar_sum, cost_sum = invoice_formula(comm_list, post_data, True)
+            invoice_com.goods_nu = goods_nu
+            invoice_com.dollar_sum = dollar_sum
+            invoice_com.cost_sum = cost_sum
             invoice_com.save()
             invoice_com.commodity_set = comm_list
             comm_list.update(is_invoice=1)
             mem = memcache.Client(settings.MEMCACHES)
-            mem.set_multi({"begin_rate": new_rate, "commpression_rate": com_rate})
+            mem.set_multi({
+                "begin_rate": post_data.get("begin_exchange_rate"), 
+                "commpression_rate": post_data.get("commission_rate"),
+                "an_rmb_rate": post_data.get("an_rmb_rate")
+            })
             return ajax_success()
+        else:print iform.errors
     return ajax_error("检查数据格式")
 
 def vlist_of_json(request):
@@ -128,18 +175,19 @@ def vmodify(request, invoice_id):
     if len(all_lot_nu) == 0:
         invoice_obj.delete()
         return ajax_success()
-    form_data = {
-        "commodity": ','.join(all_lot_nu),
-        "goods_nu": 50,
-        "dollar_sum": 300,
-        "cost_sum": 200
+    del_com_list = Commodity.objects.filter(lot__in=all_post_lot_nu)
+    com_list = Commodity.objects.filter(lot__in=all_lot_nu)
+    args = invoice_obj.toDICT()
+    goods_nu, dollar_sum, cost_sum = invoice_formula(com_list, args, is_pre)
+    form_data = { 
+        "goods_nu": goods_nu,
+        "dollar_sum": dollar_sum,
+        "cost_sum": cost_sum
     }
     [setattr(invoice_obj, key, val) for key, val in form_data.items() ]
-    commodity_list = Commodity.objects.filter(lot__in=all_lot_nu)
-    invoice_com = invoice_obj.save(commit=False)
-    invoice_com.commodity_set.add(commodity_list)
-    invoice_com.save()
-    Commodity.objects.filter(lot__in=all_post_lot_nu).update(is_invoice=0)
+    invoice_obj.save()
+    invoice_obj.commodity_set.remove(*del_com_list)
+    del_com_list.update(is_invoice=0)
     return ajax_success()
 
 def vmodify_info(request, invoice_id, template_name):
