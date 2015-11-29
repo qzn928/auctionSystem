@@ -80,15 +80,19 @@
 					<ul class="dropdown-menu pull-left">
 						<li>
 							<a href="{% url 'vlist' %}">
-							<i class="fa fa-bookmark-o"></i> pre-invoice </a>
+							<i class="fa fa-bookmark-o"></i> Pre Invoice </a>
 						</li>
 						<li>
 							<a href="{% url 'fvlist' %}">
-							<i class="fa fa-bookmark-o"></i> final-invoice </a>
+							<i class="fa fa-bookmark-o"></i> Final Invoice </a>
+						</li>
+						<li>
+							<a href="{% url 'change_rate' %}">
+							<i class="fa fa-bookmark-o"></i> Change Rate </a>
 						</li>
 						<li>
 							<a href="{% url 'commission' %}">
-							<i class="fa fa-bookmark-o"></i>commission </a>
+							<i class="fa fa-bookmark-o"></i> Commission </a>
 						</li>
 					</ul>
 				</li>
@@ -100,7 +104,7 @@
 					<ul class="dropdown-menu pull-left">
 						<li>
 							<a href="{% url 'pclassify' %}">
-							<i class="fa fa-bookmark-o"></i>classify show </a>
+							<i class="fa fa-bookmark-o"></i>Classify Show </a>
 						</li>
 						<li>
 							<a href="{% url 'plist' %}">
@@ -116,19 +120,19 @@
 					<ul class="dropdown-menu pull-left">
 						<li>
 							<a href="{% url 'unshipped_list' %}">
-							<i class="fa fa-bookmark-o"></i>unshipped invoice</a>
+							<i class="fa fa-bookmark-o"></i>Unshipped Invoice</a>
 						</li>
 						<li>
 							<a href="{% url 'ship_list' %}">
-							<i class="fa fa-user"></i>ship list </a>
+							<i class="fa fa-user"></i>Ship List </a>
 						</li>
 						<li>
 							<a href="{% url 'unpaid_list' %}">
-							<i class="fa fa-user"></i>unpaid list </a>
+							<i class="fa fa-user"></i>Unpaid List </a>
 						</li>
 						<li>
 							<a href="{% url 'ship_classify' %}">
-							<i class="fa fa-user"></i>ship classify </a>
+							<i class="fa fa-user"></i>Ship Classify </a>
 						</li>
 					</ul>
 				</li>
@@ -142,16 +146,16 @@
 				<li class="classic-menu-dropdown" id="nav-account">
 					<a data-toggle="dropdown" href="javascript:;">
 					<i class="fa fa-tasks"></i>
-					account <i class="fa fa-angle-down"></i>
+					Account <i class="fa fa-angle-down"></i>
 					</a>
 					<ul class="dropdown-menu pull-left">
 						<li>
 							<a href="{% url 'account' %}">
-							<i class="fa fa-bookmark-o"></i>account </a>
+							<i class="fa fa-bookmark-o"></i>Account </a>
 						</li>
 						<li>
 							<a href="{% url 'acclog' %}">
-							<i class="fa fa-user"></i>account log</a>
+							<i class="fa fa-user"></i>Account Log</a>
 						</li>
 					</ul>
 				</li>
@@ -231,7 +235,7 @@
 					</li>
 					<li>
                         <i class="fa fa-gift"></i>
-						<a href="#">Product List</a>
+						<a href="#">{% block current %}{% endblock %}</a>
 					</li>
 				</ul>
 			</div>

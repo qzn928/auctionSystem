@@ -17,5 +17,6 @@ urlpatterns = patterns('auctionweb.invoice.views',
     url(r'^modify/info/(?P<invoice_id>\d+)/$', "vmodify_info", 
         {"template_name": "auctionweb/invoice/addform.html"}, name="vmodify_info"),
     url(r'^add/ship/company/$', "add_ship_com", name="add_ship_com"),
+    url(r'^change/rate/$', "change_rate", {"template_name": "auctionweb/invoice/change_rate.html"}, name="change_rate"),
     url(r'^commission', "commission", {"template_name": "auctionweb/invoice/commission.html"}, name="commission"),
 )

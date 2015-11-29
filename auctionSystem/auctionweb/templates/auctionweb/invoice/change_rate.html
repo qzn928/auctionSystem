@@ -1,0 +1,109 @@
+{% extends 'auctionweb/layout.html' %}
+
+{% block head %}
+<style>
+</style>
+{% endblock %}
+{% block current %}<a href='{% url 'change_rate' %}'>change rate</a>{% endblock %}
+{% block content %}
+    <div class="alert alert-info form-add">
+        <div>
+            <form action="." id="changeRate" class="form-inline">
+                <div class="form-group">
+                    <label for="auction">Auction</label>
+                    <select class="form-control" id="auction" name="auction">
+                        <option value="">----------</option>
+                        <option value="1">auction-A</option>
+                        <option value="2">auction-B</option>
+                        <option value="3">auction-C</option>
+                    </select>
+                </div> 
+                <div class="form-group">
+                    <label for="auEvent">Event</label>
+                    <input id="auEvent" type="text" name="auction_event" class="form-control"/>
+                </div> 
+                <div class="form-group">
+                    <input class="rateSub btn btn-primary" id="changeRateBtn" type="submit" value="look"/>
+                </div> 
+                <div class="form-group" style="margin-left:10px">
+                    <label for="newRate">New Rate</label>
+                    <input id="newRate" type="text" name="new_rate" class="form-control"/>
+                </div> 
+                <div class="form-group">
+                    <input class="rateSub btn btn-warning" id="changeRateCon" type="submit" value="to change"/>
+                </div> 
+            </form>
+        </div>
+    </div>
+    <div>
+        <div style="display:noe">
+            <div>confirm the modify invoices</div>
+            <hr>
+            <table id="confirmTable" cellspacing="0" width="100%">
+                <thead>
+                    <tr>
+                        <th><span>发票号</span></th>
+                        <th><span>客户号</span></th>
+                        <th><span>品种</span></th>
+                        <th><span>数量</span></th>
+                        <th><span>生皮总额</span></th>
+                        <th><span>美金总额</span></th>
+                        <th><span>修改次数和时间</span></th>
+                    </tr>
+                </thead>
+            </table>
+        </div>
+    </div>
+{% endblock %}
+{% block footer_js %}
+    <script>
+        $("#auEvent").datepicker({dateFormat: "yy-mm"});
+        $("#confirmTable").DataTable({"paging":false, "searching":false})
+        $(".rateSub").on("click", function(){
+            if ($(this).attr("id")=="changeRateBtn"){
+                var url = "/invoice/change/rate/";
+            }else{
+                var url = "/invoice/change/rate/?confirm=y";
+            }
+            $("#changeRate").ajaxForm({
+                beforeSubmit: function(a, b, c){
+                    for (i in a){
+                        if (!a[i].value && a[i].name!="new_rate"){
+                            alert("存在为空的项!!!")
+                            return false
+                        }
+                    }
+                },
+                url: url,
+                type: "post",
+                data: {"csrfmiddlewaretoken": $("{%csrf_token%}").val()},
+                success: function(data){
+                    if (!data.success){alert(data.error_messages);return}
+                    $("#confirmTable").DataTable().destroy()
+                    ftable = $("#confirmTable").DataTable({
+                        "info": false,
+                        "searching": false,
+                        paging: false,
+                        data: data.data,
+                        "columns":[
+                            {"data": "auction_invoice"},
+                            {"data": "customer_id"},
+                            {"data": "goods_type"},
+                            {"data": "goods_nu"},
+                            {"data": "cost_sum"},
+                            {"data": "dollar_sum"},
+                            {"data": "modify_date", "fnCreatedCell":function(nTd, sData, oData, iRow, iCol){
+                                element = $(nTd).empty();
+                                var modify_date = oData["modify_date"];
+                                var modify_times = oData["modify_times"];
+                                if (modify_date && modify_times){
+                                    element.append("<span>"+modify_times+"+"+modify_date+"</span>")
+                                }
+                            }},
+                        ]
+                    })
+                }
+            })
+        })
+    </script>
+{% endblock %}

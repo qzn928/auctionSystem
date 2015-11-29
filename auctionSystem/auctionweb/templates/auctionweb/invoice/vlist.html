@@ -124,15 +124,14 @@
                                 }
                                 var all_lot_nu = [];
                                 $.each(selectAtrs, function(i, n){
-                                    console.log(n)
                                     all_lot_nu.push(n.lot)
                                 })
-                                console.log(all_lot_nu)
                                 $.post("/invoice/modify/lot/"+invoice_id+"/", {data:JSON.stringify(all_lot_nu)}, function(data){
                                     if (!data.success){
                                         alert(data.error_message)
                                     }else{
                                        $("#lotModal").find("button[data-dismiss]").trigger("click")
+                                       preTable.ajax.reload()
                                     }
                                 })
                             }
@@ -171,6 +170,9 @@
                            $.getJSON('/invoice/modify/info/'+selectAtrs[0].id+'', function(data){
                                 if (data.success){
                                     $("#addForm").empty().html(data.data.html)
+                                    if (data.data.is_dollar){
+                                        $("#id_final_exchange_rate").attr("disabled", "disabled")
+                                    }
                                     $("#modifyModal").modal();
                                     $("#vmodifyForm").ajaxForm({
                                         type: "POST",
@@ -197,8 +199,8 @@
                             }
                             var invoice_id_list = [];
                             for (i in selectAtrs){
-                                if (!selectAtrs[i].auction_invoice || !selectAtrs[i].final_exchange_rate){
-                                    alert("存在拍卖会发票和最终汇率为空的选项");
+                                if (!selectAtrs[i].auction_invoice){
+                                    alert("存在拍卖会发票为空的选项");
                                     return false;
                                 }else{
                                     invoice_id_list.push(selectAtrs[i].id)

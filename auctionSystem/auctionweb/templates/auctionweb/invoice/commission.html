@@ -1,0 +1,76 @@
+
+{% extends "auctionweb/layout.html" %}
+
+{% block header_js %}
+<style>
+    .ceTable{text-align:center}
+    .dataTables_wrapper{margin:20px}
+    .total{margin-left:17px;}
+    .total p{font-size:1.2em}
+    .total p span {padding-left:30px}
+    .total p label {color: green;}
+</style>
+{% endblock%}
+{% block content %}
+<div class="portlet box green">
+    <div class="portlet-title">
+        <div class="caption">
+            <i class="fa fa-gift"></i> Product List
+        </div>
+        <div class="tools hidden-xs">
+            <a href="javascript:;" class="collapse">
+            </a>
+        </div>
+    </div>
+    <div class="portlet-body">
+        <table class="display" id="finTable" cellspacing="0" width="100%">
+            <thead>
+                <tr>
+                    <th><span>Customer</span></th>
+                    <th><span>Auctions</span></th>
+                    <th><span>Invoice</span></th>
+                    <th><span>Skin</span></th>
+                    <th><span>SkipType</span></th>
+                    <th><span>%</span></th>
+                    <th><span>Commission</span></th>
+                    <th><span>A</span></th>
+                    <th><span>Z</span></th>
+                    <th><span>Paid</span></th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+</div>
+{% block footer_block %}
+<style>
+.modal-backdrop{z-index:0;}
+</style>
+<div class="modal fade" id="lotModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="myModalLabel">发票相关的商品信息</h4>
+      </div>
+      <table style="margin-bottom:20px" class="display" id="lotTable" cellspacing="0" width="100%">
+        <thead>
+          <tr>
+            <th><span>客户号</span></th>
+            <th><span>拍卖会</span></th>
+            <th><span>发票号</span></th>
+            <th><span></span></th>
+            <th><span>数量</span></th>
+            <th><span>敲锤价</span></th>
+          </tr>
+        </thead>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% endblock %}
+{% block footer_js %}
+    <script type="text/javascript">
+    </script>
+{% endblock %}
+{% block navname %}invoice{% endblock navname %}

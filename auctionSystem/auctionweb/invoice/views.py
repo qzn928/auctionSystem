@@ -35,6 +35,7 @@ def vlist(request, template_name):
             form.save()
             return ajax_success()
         else:
+            print form.errors
             return ajax_error(form.errors)
     return render(request, template_name)
 
@@ -51,8 +52,6 @@ def create_final_invoice(request):
         else:
             print invoice_obj.toDICT()
             goods_nu, dollar_sum, cost_sum = invoice_formula(com_list, invoice_obj.toDICT(), False)
-            print goods_nu, "222222222222"
-            return
             invoice_obj.is_pre = 0
             invoice_obj.goods_nu = goods_nu
             invoice_obj.dollar_sum = dollar_sum
@@ -87,6 +86,8 @@ def invoice_formula(com_list, post_data=None, is_pre=True):
         args["commission_rate"] = post_data.get("commission_rate")
         args["an_rmb_rate"] = post_data.get("an_rmb_rate")
         if com.sex == "male" and is_pre:
+            print args
+            print formula_obj.pre_invoice_dollar_male.format(**args)
             dollar_sum += eval(formula_obj.pre_invoice_dollar_male.format(**args))
             cost_sum += eval(formula_obj.pre_invoice_cost_male.format(**args))
         elif com.sex == "male" and not is_pre:
@@ -120,12 +121,20 @@ def begin_invoice_add(request, template_name):
         iform = InvoiceForm(form_data)
         if iform.is_valid():
             invoice_com = iform.save(commit=False)
-            goods_nu, dollar_sum, cost_sum = invoice_formula(comm_list, post_data, True)
+            try:
+                goods_nu, dollar_sum, cost_sum = invoice_formula(comm_list, post_data, True)
+            except Exception, e:
+                return ajax_error("公式错误:%s"%str(e))
             invoice_com.goods_nu = goods_nu
             invoice_com.dollar_sum = dollar_sum
             invoice_com.cost_sum = cost_sum
+            if comm_list:
+                auc_event, flag = AuctionEvent.objects.get_or_create(
+                                auction=comm_list[0].auction, 
+                                event=comm_list[0].auction_event)
+                invoice_com.auction_event = auc_event                
             invoice_com.save()
-            invoice_com.commodity_set = comm_list
+            invoice_com.commodity_set.add(*comm_list)
             comm_list.update(is_invoice=1)
             mem = memcache.Client(settings.MEMCACHES)
             mem.set_multi({
@@ -156,6 +165,7 @@ def lot_list_invoice(request, invoice_id):
     except Invoice.DoesNotExist:
         return ajax_success([])
     all_lot = invoice_obj.commodity_set.all()
+    print invoice_obj
     print all_lot
     json_lot_list = [i.toDICT() for i in all_lot]
     return ajax_success(json_lot_list)
@@ -172,13 +182,10 @@ def vmodify(request, invoice_id):
     all_in_lot_nu = [com_obj.lot for com_obj in invoice_obj.commodity_set.all()]
     all_post_lot_nu = json.loads(request.POST.get("data", ''))
     all_lot_nu = list(set(all_in_lot_nu)-set(all_post_lot_nu))
-    if len(all_lot_nu) == 0:
-        invoice_obj.delete()
-        return ajax_success()
     del_com_list = Commodity.objects.filter(lot__in=all_post_lot_nu)
     com_list = Commodity.objects.filter(lot__in=all_lot_nu)
     args = invoice_obj.toDICT()
-    goods_nu, dollar_sum, cost_sum = invoice_formula(com_list, args, is_pre)
+    goods_nu, dollar_sum, cost_sum = invoice_formula(com_list, args, True)
     form_data = { 
         "goods_nu": goods_nu,
         "dollar_sum": dollar_sum,
@@ -188,6 +195,8 @@ def vmodify(request, invoice_id):
     invoice_obj.save()
     invoice_obj.commodity_set.remove(*del_com_list)
     del_com_list.update(is_invoice=0)
+    if not invoice_obj.commodity_set.all():
+        invoice_obj.delete()
     return ajax_success()
 
 def vmodify_info(request, invoice_id, template_name):
@@ -196,13 +205,16 @@ def vmodify_info(request, invoice_id, template_name):
         invoice_obj = Invoice.objects.get(pk=invoice_id)
     except Invoice.DoesNotExist:
         return ajax_error("invoice obj does not exist")
+    lots = invoice_obj.commodity_set.all()
+    if lots:
+        auction = lots[0].auction
     form = FinalInvoiceForm(instance=invoice_obj)
     html = render_to_string(
         template_name,
         {"form": form},
         context_instance=RequestContext(request)
     )
-    return ajax_success(html=html)
+    return ajax_success({"html": html, "is_dollar": True})
 
 def add_ship_com(request):
     '''添加发票的货运相关公司'''
@@ -247,6 +259,41 @@ def fexcel(request):
         row = row + 1
     wb.save("/tmp/final_invoice.xls")
     return ajax_success() 
+
+def change_rate(request, template_name):
+    if request.method=="POST":
+        auction_id = request.POST.get("auction")
+        auc_event = request.POST.get("auction_event")
+        confirm = request.GET.get("confirm", False)
+        try:
+            auc_obj = AuctionField.objects.get(id=auction_id)
+            auc_event_obj = AuctionEvent.objects.get(auction=auc_obj, event=auc_event)
+        except AuctionField.DoesNotExist:
+            return ajax_error("auction field does not exist")
+        except AuctionEvent.DoesNotExist:
+            return ajax_error("auction event does not exist")
+        all_invoices = auc_event_obj.invoice_set.all().filter(is_pre=0).order_by("invoice_nu")
+        if not confirm:
+            confirm_invoice_list = [i.toDICT() for i in all_invoices]
+            return ajax_success(confirm_invoice_list)
+        new_an_rmb_rate = request.POST.get("new_rate")
+        try:
+            new_an_rmb_rate = float(new_an_rmb_rate)
+        except ValueError:
+            return ajax_error("rate data format is abnormal")
+        for i in all_invoices:
+            com_list = i.commodity_set.all()
+            post_data = {
+                "commission_rate": i.commission_rate, 
+                "final_exchange_rate": i.final_exchange_rate,
+                "an_rmb_rate": i.an_rmb_rate
+            }
+            i.goods_nu, i.dollar_sum, i.cost_sum = invoice_formula(com_list, post_data, False)
+            i.save()
+            print tt
+        confirm_invoice_list = [i.toDICT() for i in all_invoices]
+        return ajax_success(confirm_invoice_list)
+    return render(request, template_name, {})
 
 def commission(request, template_name):
     '''佣金模块'''

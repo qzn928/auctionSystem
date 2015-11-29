@@ -25,6 +25,10 @@ AUCTION_ACCOUNT_TYPE = (
     ("AMERICAN", u"美元账户"),
     ("LOCAL", u"本地账户")
 )
+SEX_TYPE = (
+    ('f', "female"),
+    ('m', "male"),
+)
 
 class LotSize(models.Model):
     '''
@@ -83,18 +87,28 @@ class AuctionField(models.Model):
     is_dollar = models.BooleanField(default=False)
 
     def save(self, *args, **kwargs):
+        super(AuctionField, self).save(*args, **kwargs)
         try:
             account_obj_a = AuctionAccount(name=self.name, auction=self, style="AMERICAN")
             account_obj_l = AuctionAccount(name=self.name, auction=self, style="LOCAL")
+        except Exception, e:
+            print str(e)
+        else:
             account_obj_a.save()
             account_obj_l.save()
-        except Exception, e:
-            print "1111111111111"
-            print str(e)
-        super(AuctionField, self).save(*args, **kwargs)
 
     def __str__(self):
         return self.name
+
+class AuctionEvent(models.Model):
+    '''
+    拍卖场场次
+    '''
+    auction = models.ForeignKey(AuctionField)
+    event = models.CharField(max_length=20)
+
+    def __str__(self):
+        return self.auction.name
 
 class AuctionFormula(models.Model):
     '''
@@ -219,6 +233,12 @@ class PeelInform(models.Model):
     name = models.CharField(max_length=100) 
     # 削皮场
     peel_field = models.ManyToManyField(PeelField)
+    # 品种
+    variety = models.ForeignKey(Variety, null=True)
+    # 尺码
+    size = models.ForeignKey(LotSize, null=True)
+    # 性别
+    sex = models.CharField(choices=SEX_TYPE, max_length=2, null=True)
     # 价格
     peel_price = models.FloatField()
     def __str__(self):
@@ -406,7 +426,7 @@ class Invoice(models.Model):
     # 拍卖会发票
     auction_invoice = models.CharField(max_length=50, null=True) 
     # 最终汇率
-    final_exchange_rate = models.FloatField(null=True) 
+    final_exchange_rate = models.FloatField(null=True, blank=True) 
     # 初始汇率
     begin_exchange_rate = models.FloatField(null=True, blank=True) 
     # 佣金比例
@@ -431,6 +451,8 @@ class Invoice(models.Model):
     not_net_weight = models.IntegerField(null=True) 
     # 美金对人民币汇率
     an_rmb_rate = models.FloatField(null=True)
+    # 拍卖场次
+    auction_event = models.ForeignKey(AuctionEvent, null=True)
 
 
     def __str__(self):
@@ -480,6 +502,7 @@ class Invoice(models.Model):
                     invoice_data.append((field, ''))
             elif field in ["peel_time", "out_peel_time", "delivery_time"] and field_val:
                 invoice_data.append((field, field_val.strftime("%Y-%m-%d")))
+            elif field == "auction_event":pass
             else:
                 invoice_data.append((field, field_val))
             invoice_data.append(("status", self.get_peel_status))
@@ -511,7 +534,9 @@ class Commodity(models.Model):
     # 商品lot号
     lot = models.CharField(max_length=20) 
     # 拍卖日期
-    auction_time = models.DateField()
+    auction_time = models.DateField(auto_now_add=True)
+    # 拍卖场次
+    auction_event = models.CharField(max_length=30)
     # 品种
     types = models.CharField(max_length=50) 
     # 性别

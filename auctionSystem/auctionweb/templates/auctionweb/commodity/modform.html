@@ -34,6 +34,24 @@
                         </select>
                     </div>
                  </div>
+                 {% elif field.name == "auction" %}
+                 <div class="form-group{% if field.errors %} error{% endif %}"  style="display:none">
+                    <label class="control-label col-md-3">{{field.label}} <span class="required">
+                                                        * </span>
+                    </label>
+                    <div class="col-md-4">
+                        <input id="auction" name="auction" value="{{auction.id}}">
+                    </div>
+                 </div>
+                 {% elif field.name == "lot" and copy %}
+                 <div class="form-group{% if field.errors %} error{% endif %}">
+                    <label class="control-label col-md-3">{{field.label}} <span class="required">
+                                                        * </span>
+                    </label>
+                    <div class="col-md-4">
+                        <input id="id_lot" name="lot">
+                    </div>
+                 </div>
                  {% else %}
                  <div class="form-group{% if field.errors %} error{% endif %}">
                     <label class="control-label col-md-3">{{field.label}} <span class="required">

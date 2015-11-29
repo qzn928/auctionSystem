@@ -38,9 +38,9 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'auctionweb',
-    #'xadmin',
-    #'crispy_forms',
-    #'reversion'
+    'xadmin',
+    'crispy_forms',
+    'reversion'
 )
 
 MIDDLEWARE_CLASSES = (

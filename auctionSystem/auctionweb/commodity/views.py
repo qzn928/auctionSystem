@@ -29,15 +29,17 @@ def add(request, auction_id, template_name):
     auc_varietys = auc_obj.variety_set.all()
     customers = Customer.objects.all()
     if request.method == "POST":
+        print 444444444444
         mem = memcache.Client(settings.MEMCACHES)
         cform = CommodityForm(request.POST)
         if cform.is_valid():
-            c_obj = cform.save(commit=False)
-            c_obj.auction = auc_obj
-            c_obj.save()
+            print 33333333333333
+            c_obj = cform.save()
+            #c_obj.auction = auc_obj
+            #c_obj.save()
             #根据拍卖日期创建公司子账户及更新客户账户欠款
             try:
-                date_split = request.POST.get("auction_time").split("-")
+                date_split = request.POST.get("auction_event").split("-")
                 son_count = '-'.join([date_split[0], date_split[1], auc_obj.name])
                 account, create = Account.objects.get_or_create(name=son_count, style="COM", defaults={"balance": 0})
                 cus_obj = customers.get(name=c_obj.customer_id)
@@ -45,22 +47,24 @@ def add(request, auction_id, template_name):
                 cus_obj.account.save()
             except Exception, e:
                 print str(e)
-            mem.set("last_form", request.POST)
+            tt = mem.set(mckeys.COPY_LAST_FORM, request.POST)
+            print tt, mckeys.COPY_LAST_FORM, request.POST
             cform = CommodityForm()
             html = render_to_string(
                 "auctionweb/commodity/modform.html",
-                {"cform": cform, "auc_varietys": auc_varietys, "customers":customers}, 
+                {"cform": cform, "auc_varietys": auc_varietys, "customers":customers, "auction": auc_obj}, 
                 context_instance=RequestContext(request)
             )
             return ajax_success({"success": True, "html": html})
         else:
+            print 222222222222222222, cform
             html = render_to_string(
                 "auctionweb/commodity/modform.html",
-                {"cform": cform, "auc_varietys": auc_varietys, "customers":customers}, 
+                {"cform": cform, "auc_varietys": auc_varietys, "customers":customers, "auction": auc_obj}, 
                 context_instance=RequestContext(request)
             )
             return ajax_success({"html": html})
-    C = {"cform": cform, "auc_varietys": auc_varietys, "customers": customers}   
+    C = {"cform": cform, "auc_varietys": auc_varietys, "customers": customers,"auction": auc_obj}   
     return render(request, template_name, C)
 
 def change(request, lot_nu, template_name):
@@ -80,7 +84,8 @@ def change(request, lot_nu, template_name):
     C = {
         "cform": cform, 
         "variety": com_obj.types,
-        "auc_varietys": auc_varietys
+        "auc_varietys": auc_varietys,
+        "customers": Customer.objects.all()
     }
     return render(request, template_name, C)
 
@@ -97,7 +102,6 @@ def copy_last_form(request, template_name):
     customers = Customer.objects.all()
     if last_form_data:
         copy_form_data = last_form_data.copy()
-        copy_form_data.pop("lot")
         cform = CommodityForm(copy_form_data)
     else:
         cform = CommodityForm()
@@ -105,8 +109,10 @@ def copy_last_form(request, template_name):
         template_name,
         {
             "cform": cform, 
+            "copy": True,
             "auc_varietys": varietys,
-            "customers": customers
+            "customers": customers,
+            "auction": auc_obj
         },
         context_instance=RequestContext(request)
     )
@@ -136,7 +142,7 @@ def list(request, template_name):
     C = {
         "begin_rate": begin_rate if begin_rate else '',
         "com_rate": com_rate if com_rate else '',
-        "an_rmb_rate": an_rmb_rate,
+        "an_rmb_rate": an_rmb_rate if an_rmb_rate else '',
         "auctions": auction_list
     }
     print template_name

@@ -60,7 +60,7 @@
     <script>
         $("#addForm").find("input").addClass("form-control")
         $("#addForm").find("select").addClass("form-control")
-        $("#id_auction_time").datepicker({dateFormat: "yy-mm-dd"}) // auction_time 绑定时间插件
+        $("#id_auction_event").datepicker({dateFormat: "yy-mm"}) // auction_time 绑定时间插件
         //复制表单
         $("#copyForm").on("click", function(){
             $.getJSON("{% url 'aform' %}", function(data){
@@ -76,6 +76,7 @@
                 $("#id_types").select2()
                 $("#id_customer_id").select2()
                 $("#id_auction_time").datepicker({dateFormat: "yy-mm-dd"}) // auction_time 绑定时间插件
+                $("#id_auction_event").datepicker({dateFormat: "yy-mm"}) // auction_time 绑定时间插件
                 //$('button-previous').trigger('click');
             })
         })
