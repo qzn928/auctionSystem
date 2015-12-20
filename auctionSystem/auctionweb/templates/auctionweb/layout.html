@@ -159,6 +159,13 @@
 						</li>
 					</ul>
 				</li>
+				<li class="classic-menu-dropdown" id="nav-book">
+                    <a href="{% url 'book'%}">
+                    <i class="fa fa-gift"></i>
+					Book<span class="selected">
+					</span>
+					</a>
+				</li>
 			</ul>
 		</div>
 		<!-- END HORIZANTAL MENU -->
@@ -233,10 +240,8 @@
 						<a href="{% url 'clist' %}">Home Page</a>
 						<i class="fa fa-angle-right"></i>
 					</li>
-					<li>
-                        <i class="fa fa-gift"></i>
-						<a href="#">{% block current %}{% endblock %}</a>
-					</li>
+                    {% block current %}
+                    {% endblock %}
 				</ul>
 			</div>
 			<!-- END PAGE HEADER-->

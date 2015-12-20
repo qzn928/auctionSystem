@@ -1,10 +1,16 @@
 {% extends 'auctionweb/layout.html' %}
 
+{% block current %}
+    <li> 
+        <i class="fa fa-gift"></i>
+        <a href="javascript:0">ChangeRate</a>
+    </li>
+{% endblock %}
+
 {% block head %}
 <style>
 </style>
 {% endblock %}
-{% block current %}<a href='{% url 'change_rate' %}'>change rate</a>{% endblock %}
 {% block content %}
     <div class="alert alert-info form-add">
         <div>
@@ -107,3 +113,4 @@
         })
     </script>
 {% endblock %}
+{% block navname %}invoice{%endblock%}

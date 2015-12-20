@@ -1,5 +1,11 @@
-
 {% extends "auctionweb/layout.html" %}
+
+{% block current %}
+    <li> 
+        <i class="fa fa-gift"></i>
+        <a href="javascript:0">Pre-Invoice</a>
+    </li>
+{% endblock %}
 
 {% block header_js %}
 <style>
@@ -245,7 +251,7 @@
                 {"data": "cost_sum"},
                 {"data": "auction_invoice"},
                 {"data": "final_exchange_rate"},
-            ]
+            ],
         })
     </script>
 {% endblock %}

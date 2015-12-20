@@ -110,27 +110,30 @@ class AuctionEvent(models.Model):
     def __str__(self):
         return self.auction.name
 
+    def get_year(self):
+        return self.event.split("-")[0]
+
 class AuctionFormula(models.Model):
     '''
     拍卖场发票的计算公司配置表
     '''
     auction = models.ForeignKey(AuctionField)
     #美金总额计算公式(初始发票, sex male)
-    pre_invoice_dollar_male = models.CharField(max_length=500)
+    pre_invoice_dollar_male = models.TextField(max_length=500)
     #美金总额计算公式(初始发票, sex female)
-    pre_invoice_dollar_female = models.CharField(max_length=500)
+    pre_invoice_dollar_female = models.TextField(max_length=500)
     #生皮总额计算公式(初始发票, sex male)
-    pre_invoice_cost_male = models.CharField(max_length=500)
+    pre_invoice_cost_male = models.TextField(max_length=500)
     #生皮总额计算公式(初始发票, sex female)
-    pre_invoice_cost_female = models.CharField(max_length=500)
+    pre_invoice_cost_female = models.TextField(max_length=500)
     #美金总额计算公式(最终发票, sex male)
-    final_invoice_dollar_male = models.CharField(max_length=500)
+    final_invoice_dollar_male = models.TextField(max_length=500)
     #美金总额计算公式(最终发票, sex female)
-    final_invoice_dollar_female = models.CharField(max_length=500)
+    final_invoice_dollar_female = models.TextField(max_length=500)
     #生皮总额计算公式(最终发票, sex male)
-    final_invoice_cost_male = models.CharField(max_length=500)
+    final_invoice_cost_male = models.TextField(max_length=500)
     #生皮总额计算公式(最终发票, sex female)
-    final_invoice_cost_female = models.CharField(max_length=500)
+    final_invoice_cost_female = models.TextField(max_length=500)
 
     def __str__(self):
         return self.auction.name

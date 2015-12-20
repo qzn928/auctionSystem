@@ -1,5 +1,16 @@
 {% extends 'auctionweb/layout.html' %}
 
+{% block current%}
+    <li> 
+        <i class="fa fa-gift"></i>
+        <a href="{% url 'clist' %}">Lot</a>
+        <i class="fa fa-angle-right"></i>
+    </li>
+    <li> 
+        <i class="fa fa-gift"></i>
+        <a href="javascript:0">Add</a>
+    </li>
+{% endblock %}
 {% block header_js %}
 <style>
     .form-add{margin:0 auto;margin-top:20px;}

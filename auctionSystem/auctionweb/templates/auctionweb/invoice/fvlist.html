@@ -1,21 +1,28 @@
-
 {% extends "auctionweb/layout.html" %}
 
+{% block current %}
+    <li> 
+        <i class="fa fa-gift"></i>
+        <a href="javascript:0">Final-Invoice</a>
+    </li>
+{% endblock %}
+
 {% block header_js %}
-<style>
-    .ceTable{text-align:center}
-    .dataTables_wrapper{margin:20px}
-    .total{margin-left:17px;}
-    .total p{font-size:1.2em}
-    .total p span {padding-left:30px}
-    .total p label {color: green;}
-</style>
+    <style>
+        .ceTable{text-align:center}
+        .dataTables_wrapper{margin:20px}
+    </style>
 {% endblock%}
 {% block content %}
+<div class="well">
+    {% for y in auction_year %}   
+        <a type="button" class="btn btn-info" {% if year == y %} style="background-color:green"{%endif%} href="?year={{y}}">{{y}}</a>
+    {% endfor %}
+</div>
 <div class="portlet box green">
     <div class="portlet-title">
         <div class="caption">
-            <i class="fa fa-gift"></i> Product List
+            <i class="fa fa-gift"></i> F-INVOICE
         </div>
         <div class="tools hidden-xs">
             <a href="javascript:;" class="collapse">
@@ -23,25 +30,62 @@
         </div>
     </div>
     <div class="portlet-body">
-        <table class="display" id="finTable" cellspacing="0" width="100%">
-            <thead>
-                <tr>
-                    <th><span>发票号</span></th>
-                    <th><span>客户号</span></th>
-                    <th><span>品种</span></th>
-                    <th><span>数量</span></th>
-                    <th><span>生皮总额</span></th>
-                    <th><span>美金总额</span></th>
-                    <th><span>修改次数和时间</span></th>
-                </tr>
-            </thead>
-        </table>
-        <hr/>
-        <div class="total">
-            <p><label>汇总信息</label><span>客户:12 </span><span>发票数量:2000 </span><span>生皮总额:10000</span> <span>美金总额:3000</span></p>
+        <div class="panel-group accordion" id="accordion1">
+            {% for au, val in result.items %}
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h4 class="panel-title">
+						<a class="accordion-toggle accordion-toggle-styled collapsed" data-toggle="collapse" data-parent="#accordion1" href="#collapse_{{au}}">
+				        auction:{{au}}</a>
+					</h4>
+                </div>
+                <div id="collapse_{{au}}" class="panel-collapse collapse">
+                    <div class="panel-body">
+                        {% for ev, invo in val %}
+                        <div>
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <h4 class="panel-title">
+                                    <a class="accordion-toggle accordion-toggle-styled collapsed" data-toggle="collapse" href="#collapse_{{au}}_{{ev}}">
+                                    event:{{ev}}</a>
+                                </h4>
+                            </div>
+                        </div>
+                        <div id="collapse_{{au}}_{{ev}}" class="panel-collapse collapse">
+                            <div class="panel-body">
+                                <table cellspacing="0" width="100%" class="table table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th><span>发票号</span></th>
+                                            <th><span>客户号</span></th>
+                                            <th><span>品种</span></th>
+                                            <th><span>数量</span></th>
+                                            <th><span>生皮总额</span></th>
+                                            <th><span>美金总额</span></th>
+                                            <th><span>修改次数和时间</span></th>
+                                            <th><span>handle</span></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                    {% for invoice_obj in invo %}
+                                            <tr class="fvtr" data-id={{invoice_obj.id}}>
+                                                {% include "auctionweb/invoice/table_line.html" %}
+                                            </tr>
+                                    {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
         </div>
     </div>
 </div>
+{% endblock %}
 {% block footer_block %}
 <style>
 .modal-backdrop{z-index:0;}
@@ -69,10 +113,10 @@
   </div>
 </div>
 {% endblock %}
-{% endblock %}
 {% block footer_js %}
     <script type="text/javascript">
-        function get_invoice_lot(invoice_id){
+        function get_invoice_lot(this_tr, invoice_id){
+            $("#lotTable").DataTable().destroy();
             var lotTable = $("#lotTable").DataTable({
                 "searching": false,
                 "info": false,
@@ -96,12 +140,17 @@
                                     console.log(n)
                                     all_lot_nu.push(n.lot)
                                 })
-                                console.log(all_lot_nu)
                                 $.post("/invoice/modify/lot/"+invoice_id+"/", {data:JSON.stringify(all_lot_nu)}, function(data){
                                     if (!data.success){
                                         alert(data.error_message)
                                     }else{
-                                       finTable.ajax.reload();
+                                        $.getJSON("/invoice/tableline/"+invoice_id+"", function(data){
+                                            if (data.success){
+                                                this_tr.html(data.data)
+                                            }else{
+                                                alert(data.error_message)
+                                            }
+                                        })
                                        $("#lotModal").find("button[data-dismiss]").trigger("click")
                                     }
                                 })
@@ -120,131 +169,12 @@
                    ]
             })
         };
-        $.get("{% url 'fvjson' %}", function(data){
-            drawTable(data.data);
-            var customer_list=[], num=0, shengpi_sum=0, dollar_sum=0;
-            for (i in data.data){
-                var one_data = data.data[i];
-                customer_list.push(one_data.customer_id);
-                num += one_data.goods_nu;
-                shengpi_sum += one_data.cost_sum;
-                dollar_sum +=  one_data.dollar_sum;
-            }
-            countDraw([$.unique(customer_list).length, num, shengpi_sum, dollar_sum])
-        }, "json")
-        function drawTable(data){
-            var finTable = $("#finTable").DataTable({
-                "searching": true,
-                //"info": false,
-               // "paging": false,
-                "sDom": '<"toolsbar"><"H"TfrC>t<"F"ip>',
-                data: data,
-               // "ajaxSource":"{% url 'fvjson' %}",
-                "oTableTools":{
-                    "sRowSelect": "multi",
-                    "aButtons": [
-                        {
-                            "sExtends": "text",
-                            "sButtonText": "view",
-                            "fnClick": function(nButton, oConfig, oFlash){
-                                var ott = TableTools.fnGetInstance("finTable");
-                                var selectAtrs = ott.fnGetSelectedData();
-                                if (selectAtrs.length!=1){
-                                    alert("请选择一行进行查看")
-                                    return false
-                                }
-                                $("#lotTable").DataTable().destroy();
-                                get_invoice_lot(selectAtrs[0].id)
-                                $("#lotModal").modal()
-                             }
-                        },{
-                            "sExtends": "text",
-                            "sButtonText": "导出excel",
-                            "fnClick": function(nButton, oConfig, oFlash){
-                                var ott = TableTools.fnGetInstance("finTable");
-                                var selectAtrs = ott.fnGetSelectedData();
-                                var id_array = []
-                                for (i in selectAtrs){
-                                    id_array.push(selectAtrs[i].id)
-                                }
-                                $.ajax({
-                                    type: "post",
-                                    url: "/invoice/export/excel",
-                                    data: {data:JSON.stringify({
-                                        "id_lis": id_array, 
-                                        }),
-                                        "csrfmiddlewaretoken": $("{%csrf_token%}").val()},
-                                    success: function(data){
-                                        if (data.success){
-                                            location.href = "/invoice/export/excel"
-                                        }
-                                    }
-                                })
-                             }
-                        }
-                    ]
-                },
-                "columns":[
-                    {"data": "auction_invoice"},
-                    {"data": "customer_id"},
-                    {"data": "goods_type"},
-                    {"data": "goods_nu"},
-                    {"data": "cost_sum"},
-                    {"data": "dollar_sum"},
-                    {"data": "modify_date", "fnCreatedCell":function(nTd, sData, oData, iRow, iCol){
-                        element = $(nTd).empty();
-                        var modify_date = oData["modify_date"];
-                        var modify_times = oData["modify_times"];
-                        if (modify_date && modify_times){
-                            element.append("<span>"+modify_times+"+"+modify_date+"</span>")
-                        }
-                    }},
-                ]
-            })
-        }
-        // 汇总图形部分
-        function countDraw(data){
-            myChart = echarts.init(document.getElementById("countGraph"))
-            option = {
-                title : {
-                    text: '最终发票汇总信息',
-                },
-                tooltip : {
-                    trigger: 'axis'
-                },
-                legend: {
-                    data:["最终发票汇总信息"]
-                },
-                xAxis : [
-                    {
-                        type : 'category',
-                        data : ["客户", "发票数量", "生皮总额", "美金总额"]
-                    }
-                ],
-                yAxis : [
-                    {
-                        type : 'value'
-                    }
-                ],
-                series : [
-                    {
-                        name:'发票汇总',
-                        type:'bar',
-                        barCategoryGap: '80%',
-                        itemStyle: {
-                            normal: {
-                                color: "tomato",
-                                label:{
-                                    show: true,
-                                }
-                            }
-                        },
-                        data: data,
-                    },
-                ]
-            };
-            myChart.setOption(option)
-        }
+        $(document).delegate(".split", "click", function(event){
+           var this_tr = $(event.target).parent().parent(); 
+           var invoice_id = this_tr.data("id");
+           get_invoice_lot(this_tr, invoice_id);
+           $("#lotModal").modal();
+        })
     </script>
 {% endblock %}
-{% block navname %}invoice{% endblock navname %}
+{% block navname %}invoice{% endblock%}

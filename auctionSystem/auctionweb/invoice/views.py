@@ -64,8 +64,34 @@ def create_final_invoice(request):
 
 def fvlist(request, template_name):
     '''显示最终发票列表'''
-    return render(request, template_name)
+    year = request.GET.get("year")
+    a_event = AuctionEvent.objects.all()
+    auction_year = set([i.get_year() for i in a_event])
+    if not auction_year:
+        return Http404
+    if not year:
+        year = sorted(auction_year, reverse=True)[0]
+    all_auc_events = AuctionEvent.objects.filter(event__icontains=year)        
+    result = {}
+    for ev in all_auc_events:
+        au_name = ev.auction.name
+        if au_name in result:
+            result[au_name].append([ev.event, [i.toDICT() for i in ev.invoice_set.all().filter(is_pre=0)]])
+        else:
+            result[au_name] = [[ev.event, [i.toDICT() for i in ev.invoice_set.all().filter(is_pre=0)]]]
+    C = {"auction_year": auction_year, "result": result, "year": year}
+    return render(request, template_name, C)
 
+def get_invoice_table(request, invoice_id, template_name):
+    try:
+        invoice_obj = Invoice.objects.get(id=invoice_id)
+    except Invoice.DoesNotExist:
+        return ajax_error("invoice_obj is not exist")
+    html = render_to_string(
+        template_name,
+        {"invoice_obj": invoice_obj},
+        context_instance=RequestContext(request))
+    return ajax_success(html)
 def invoice_formula(com_list, post_data=None, is_pre=True):
     formula_objs = AuctionFormula.objects.all()
     goods_sum, dollar_sum, cost_sum = 0, 0, 0
@@ -165,8 +191,6 @@ def lot_list_invoice(request, invoice_id):
     except Invoice.DoesNotExist:
         return ajax_success([])
     all_lot = invoice_obj.commodity_set.all()
-    print invoice_obj
-    print all_lot
     json_lot_list = [i.toDICT() for i in all_lot]
     return ajax_success(json_lot_list)
 

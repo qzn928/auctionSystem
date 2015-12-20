@@ -29,11 +29,9 @@ def add(request, auction_id, template_name):
     auc_varietys = auc_obj.variety_set.all()
     customers = Customer.objects.all()
     if request.method == "POST":
-        print 444444444444
         mem = memcache.Client(settings.MEMCACHES)
         cform = CommodityForm(request.POST)
         if cform.is_valid():
-            print 33333333333333
             c_obj = cform.save()
             #c_obj.auction = auc_obj
             #c_obj.save()
@@ -57,7 +55,6 @@ def add(request, auction_id, template_name):
             )
             return ajax_success({"success": True, "html": html})
         else:
-            print 222222222222222222, cform
             html = render_to_string(
                 "auctionweb/commodity/modform.html",
                 {"cform": cform, "auc_varietys": auc_varietys, "customers":customers, "auction": auc_obj}, 
