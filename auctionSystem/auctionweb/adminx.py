@@ -89,3 +89,7 @@ class AuctionEventAdmin(object):
 
 xadmin.site.register(AuctionEvent, AuctionFormulaAdmin)
 
+class CommissionAdmin(object):
+    pass
+
+xadmin.site.register(Commission, CommissionAdmin)

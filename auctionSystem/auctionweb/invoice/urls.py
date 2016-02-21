@@ -20,4 +20,5 @@ urlpatterns = patterns('auctionweb.invoice.views',
     url(r'^change/rate/$', "change_rate", {"template_name": "auctionweb/invoice/change_rate.html"}, name="change_rate"),
     url(r'^commission/$', "commission", {"template_name": "auctionweb/invoice/commission.html"}, name="commission"),
     url(r'^tableline/(?P<invoice_id>\d+)/$', "get_invoice_table", {"template_name": "auctionweb/invoice/table_line.html"}),
+    url(r'^commission/data/$', "get_commission_data"),
 )

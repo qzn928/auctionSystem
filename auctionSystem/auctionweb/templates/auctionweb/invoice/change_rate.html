@@ -19,9 +19,9 @@
                     <label for="auction">Auction</label>
                     <select class="form-control" id="auction" name="auction">
                         <option value="">----------</option>
-                        <option value="1">auction-A</option>
-                        <option value="2">auction-B</option>
-                        <option value="3">auction-C</option>
+                        {% for au in auctions %}
+                            <option value="{{au.id}}">{{au.name}}</option>
+                        {%endfor%}
                     </select>
                 </div> 
                 <div class="form-group">

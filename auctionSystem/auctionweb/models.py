@@ -36,7 +36,7 @@ class LotSize(models.Model):
     '''
     size = models.CharField(max_length=30)
 
-    def __str__(self):
+    def __unicode__(self):
         return self.size
 
 class LotLevel(models.Model):
@@ -45,7 +45,7 @@ class LotLevel(models.Model):
     '''
     level = models.CharField(max_length=30)
 
-    def __str__(self):
+    def __unicode__(self):
         return self.level
 
 class LotColor(models.Model):
@@ -54,7 +54,7 @@ class LotColor(models.Model):
     '''
     color = models.CharField(max_length=30)
 
-    def __str__(self):
+    def __unicode__(self):
         return self.color
 
 class LotClear(models.Model):
@@ -62,9 +62,17 @@ class LotClear(models.Model):
     LOT的清晰度
     '''
     definition = models.CharField(max_length=30)
-    def __str__(self):
+    def __unicode__(self):
         return self.definition
     
+class Commission(models.Model):
+    '''佣金计算配置表
+    '''
+    formular = models.CharField(max_length=500)
+    a_scale = models.IntegerField()
+    b_scale = models.IntegerField()
+    c_scale = models.IntegerField()
+    d_scale = models.IntegerField()
 
 class Account(models.Model):
     '''
@@ -73,7 +81,7 @@ class Account(models.Model):
     name = models.CharField(max_length=30, unique=True)
     balance = models.IntegerField(default=0)
     style = models.CharField(choices=ACCOUNT_TYPE, max_length=10, default="OTHER")
-    def __str__(self):
+    def __unicode__(self):
         return self.name
 
 class AuctionField(models.Model):
@@ -97,7 +105,7 @@ class AuctionField(models.Model):
             account_obj_a.save()
             account_obj_l.save()
 
-    def __str__(self):
+    def __unicode__(self):
         return self.name
 
 class AuctionEvent(models.Model):
@@ -107,7 +115,7 @@ class AuctionEvent(models.Model):
     auction = models.ForeignKey(AuctionField)
     event = models.CharField(max_length=20)
 
-    def __str__(self):
+    def __unicode__(self):
         return self.auction.name
 
     def get_year(self):
@@ -135,7 +143,7 @@ class AuctionFormula(models.Model):
     #生皮总额计算公式(最终发票, sex female)
     final_invoice_cost_female = models.TextField(max_length=500)
 
-    def __str__(self):
+    def __unicode__(self):
         return self.auction.name
 
 class TransferRecord(models.Model):
@@ -177,7 +185,7 @@ class AuctionAccount(models.Model):
     balance = models.IntegerField(default=0)
     style = models.CharField(choices=AUCTION_ACCOUNT_TYPE, max_length=10, default="AMERICAN")
     auction = models.ForeignKey(AuctionField)
-    def __str__(self):
+    def __unicode__(self):
         return self.name
 
 class Variety(models.Model):
@@ -187,7 +195,7 @@ class Variety(models.Model):
     # 品种名称
     name = models.CharField(max_length=50, unique=True)
     auction = models.ManyToManyField(AuctionField)   
-    def __str__(self):
+    def __unicode__(self):
         return self.name
 
 class Customer(models.Model):
@@ -212,7 +220,7 @@ class Customer(models.Model):
             pass
         super(Customer, self).save(*args, **kwargs)
 
-    def __str__(self):
+    def __unicode__(self):
         return self.name
 
 class PeelField(models.Model):
@@ -227,7 +235,7 @@ class PeelField(models.Model):
     call_person = models.CharField(max_length=10) 
     # 联系人电话
     call_phone = models.CharField(max_length=15) 
-    def __str__(self):
+    def __unicode__(self):
         return self.name
 
 class PeelInform(models.Model):
@@ -237,14 +245,14 @@ class PeelInform(models.Model):
     # 削皮场
     peel_field = models.ManyToManyField(PeelField)
     # 品种
-    variety = models.ForeignKey(Variety, null=True)
+    variety = models.ManyToManyField(Variety, null=True)
     # 尺码
-    size = models.ForeignKey(LotSize, null=True)
+    size = models.ManyToManyField(LotSize, null=True)
     # 性别
-    sex = models.CharField(choices=SEX_TYPE, max_length=2, null=True)
+    sex = models.CharField(choices=SEX_TYPE, max_length=2, null=True, blank=True)
     # 价格
     peel_price = models.FloatField()
-    def __str__(self):
+    def __unicode__(self):
         return self.name
 
 class Clearance(models.Model):
@@ -252,7 +260,7 @@ class Clearance(models.Model):
     # 清关公司名字
     name = models.CharField(max_length=50, unique=True)
 
-    def __str__(self):
+    def __unicode__(self):
         return self.name
     
 class Delivery(models.Model):
@@ -270,7 +278,7 @@ class Delivery(models.Model):
             pass
         super(Delivery, self).save(*args, **kwargs)
 
-    def __str__(self):
+    def __unicode__(self):
         return self.name
     
 class Harbour(models.Model):
@@ -278,7 +286,7 @@ class Harbour(models.Model):
     # 港口名字
     name = models.CharField(max_length=50, unique=True)
 
-    def __str__(self):
+    def __unicode__(self):
         return self.name
 
 class ForeignShip(models.Model):
@@ -298,7 +306,7 @@ class ForeignShip(models.Model):
             pass
         super(ForeignShip, self).save(*args, **kwargs)
 
-    def __str__(self):
+    def __unicode__(self):
         return self.name
 
 class PaymentOrder(models.Model):
@@ -309,7 +317,7 @@ class PaymentOrder(models.Model):
     credit_note = models.IntegerField(null=True)
     # 还款
     payment = models.IntegerField()
-    def __str__(self):
+    def __unicode__(self):
         return self.account.name
 
 class Shiping(models.Model):
@@ -346,7 +354,7 @@ class Shiping(models.Model):
     clear_time = models.DateField(null=True)
 
 
-    def __str__(self):
+    def __unicode__(self):
         return self.shiping_nu
 
     @classmethod
@@ -373,7 +381,7 @@ class Shiping(models.Model):
         date = datetime.date(now.year, now.month, now.day)
         if not self.takeoff_time or date<self.takeoff_time:
             status = "货未发"
-        elif self.takeoff_time<=date<self.arrive_time:
+        elif not self.arrive_time or self.takeoff_time<=date<self.arrive_time:
             status = "运输途中"
         else:
             status = "已到港"
@@ -458,7 +466,7 @@ class Invoice(models.Model):
     auction_event = models.ForeignKey(AuctionEvent, null=True)
 
 
-    def __str__(self):
+    def __unicode__(self):
         return self.invoice_nu
 
     @classmethod
@@ -484,11 +492,37 @@ class Invoice(models.Model):
             return ""
         return status
 
+    def commission_fee(self, commis_obj):
+        coms = self.commodity_set.all()
+        com_price = 0
+        args = self.toDICT()
+        if not args.get("final_exchange_rate"):
+            args["final_exchange_rate"] = 1
+        try:
+            for c in coms:
+                args["final_price"] = c.final_price
+                args["number"] = c.number
+                com_price += eval(commis_obj.formular.format(**args))
+        except Exception, e:
+            print str(e)
+            return False, 0, {}
+        com_price = round(com_price, 2)
+        args["commission"] = com_price 
+        args["a_scale"], args["b_scale"], args["c_scale"], args["d_scale"] = \
+            com_price*commis_obj.a_scale/100, com_price*commis_obj.b_scale/100, \
+            com_price*commis_obj.c_scale/100, com_price*commis_obj.d_scale/100
+        return True, args 
+
     def toDICT(self):
         invoice_data = []
         fields = [f.name for f in self._meta.fields]
-        commoditys = ','.join(set([com.types for com in self.commodity_set.all()]))
-        invoice_data.append(("goods_type", commoditys))
+        commoditys = self.commodity_set.all()
+        extra_info = [
+            ("goods_type", ','.join(set([com.types for com in commoditys]))),
+            ("auction_event", commoditys[0].auction_event if commoditys else ''),
+            ("auction", commoditys[0].auction.name if commoditys else '')
+        ]
+        invoice_data.extend(extra_info)
         for field in fields:
             field_val = getattr(self, field)
             if field == "modify_date" and field_val:
@@ -543,7 +577,7 @@ class Commodity(models.Model):
     # 品种
     types = models.CharField(max_length=50) 
     # 性别
-    sex = models.CharField(max_length=50) 
+    sex = models.CharField(max_length=50, null=True, blank=True) 
     # 客户编号
     customer_id = models.CharField(max_length=20) 
     # 尺码
@@ -589,7 +623,7 @@ class Commodity(models.Model):
     #削皮备注
     peel_comment = models.CharField(max_length=100, null=True)
 
-    def __str__(self):
+    def __unicode__(self):
         return self.lot
 
     def toDICT(self):
@@ -603,7 +637,7 @@ class Commodity(models.Model):
                     commodity.append((field, ''))
             elif field == "invoice":
                 try:
-                    commodity.append((field, getattr(getattr(self, field), "invoice_nu")))
+                    commodity.append((field, getattr(getattr(self, field), "auction_invoice")))
                 except AttributeError:
                     commodity.append((field, ''))
             elif field in ["auction_time", "peel_time", "out_peel_time", "delivery_time", "peel_mo_time"]:
@@ -632,3 +666,6 @@ class Commodity(models.Model):
         except:
             return ""
         return status
+
+
+

@@ -177,6 +177,6 @@ def get_select(request):
         "id_level": [i.level for i in all_obj_def(LotLevel)],
         "id_color": [i.color for i in all_obj_def(LotColor)],
         "id_definition": [i.definition for i in all_obj_def(LotClear)],
-        "id_sex": ["female", "male"]
+        "id_sex": ["Female", "Male"]
     }
     return ajax_success(choice_data)

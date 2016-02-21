@@ -127,7 +127,8 @@ def add_ship_info(request, ship_nu):
         raise Http404
     data = {}
     for key, val in request.POST.items():
-        data[key] = val
+        if val:
+            data[key] = val
     data["foreign_ship"] = foreign_ship
     [setattr(ship_obj, key, val) for key, val in data.items()]
     ship_obj.save()
@@ -183,18 +184,37 @@ def add_ship_fee(request, ship_nu):
 def ship_classify(request, template_name):
     '''货运分类显示关于各公司的付账情况'''
     foreign_ship = ForeignShip.objects.all()
-    return render(request, template_name, {"foreign_ship": foreign_ship})
+    deliverys = Delivery.objects.all()
+    clearances = Clearance.objects.all()
+    C = {
+        "foreign_ship": foreign_ship,
+        "deliverys": deliverys,
+        "clearances": clearances
+    }
+    return render(request, template_name, C)
 
 def classify_data(request):
     '''分类显示货运数据'''
     back_data = {}
+    which = request.GET.get("company")
     ship_obj = Shiping.objects.all()
     for ship in ship_obj:
         data = ship.toDICT()
-        if data.get("foreign_ship") in back_data:
-            back_data[data.get("foreign_ship")].append(data)
+        if not which or which=="foreign":
+            if data.get("foreign_ship") in back_data:
+                back_data[data.get("foreign_ship")].append(data)
+            else:
+                back_data[data.get("foreign_ship")] = [data]
+        elif which=="delivery":
+            if data.get("delivery_company") in back_data:
+                back_data[data.get("delivery_company")].append(data)
+            else:
+                back_data[data.get("delivery_company")] = [data]
         else:
-            back_data[data.get("foreign_ship")] = [data]
+            if data.get("clearance_company") in back_data:
+                back_data[data.get("clearance_company")].append(data)
+            else:
+                back_data[data.get("clearance_company")] = [data]
     return ajax_success(back_data)
 
 def to_pay_shiping(request):

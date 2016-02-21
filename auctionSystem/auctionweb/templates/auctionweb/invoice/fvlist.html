@@ -142,13 +142,19 @@
                                 })
                                 $.post("/invoice/modify/lot/"+invoice_id+"/", {data:JSON.stringify(all_lot_nu)}, function(data){
                                     if (!data.success){
-                                        alert(data.error_message)
+                                        var error_message = data.error_message;
+                                        if (error_message == 'invoice_obj is not exist'){
+                                            this_tr.html('')
+                                        }
                                     }else{
                                         $.getJSON("/invoice/tableline/"+invoice_id+"", function(data){
                                             if (data.success){
                                                 this_tr.html(data.data)
                                             }else{
-                                                alert(data.error_message)
+                                                var error_message = data.error_message;
+                                                if (error_message == 'invoice_obj is not exist'){
+                                                    this_tr.html('')
+                                                }
                                             }
                                         })
                                        $("#lotModal").find("button[data-dismiss]").trigger("click")

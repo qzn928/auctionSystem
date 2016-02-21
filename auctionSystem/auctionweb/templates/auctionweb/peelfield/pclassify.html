@@ -32,10 +32,11 @@
                     <div class="panel-body">
                         <table id="peel{{peel.id}}" cellspacing="0" width="100%">
                             <thead>
-                                <tr>
+                                <tr style="font-size:10px">
                                     <th><span>lot</span></th>
                                     <th><span>客户ID</span></th>
-                                    <th><span>拍卖会</span></th>
+                                    <th><span>Auction</span></th>
+                                    <th><span>Auction Event</span></th>
                                     <th><span>发票号</span></th>
                                     <th><span>削皮指示</span></th>
                                     <th><span>削皮费</span></th>
@@ -188,7 +189,7 @@
                                 })
                                 $("#timeModal").modal();
                             }
-                        },{
+                        }/*{
                             "sExtends": "text",
                             "sButtonText": "view",
                             "fnClick": function(nButton, oConfig, oFlash){
@@ -203,13 +204,14 @@
                                 get_invoice_lot(com_id);
                                 $("#lotModal").modal()
                             }
-                        }
+                        }*/
                       ]
                  },
                 "columns":[
                     {"data": "lot"},
                     {"data": "customer_id"},
                     {"data": "auction"},
+                    {"data": "auction_event"},
                     {"data": "invoice"},
                     {"data": "peel_inform"},
                     {"data": "peel_price"},

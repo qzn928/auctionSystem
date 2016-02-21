@@ -19,7 +19,7 @@
     <div class="portlet-body">
         <table class="display" id="usInvoice" cellspacing="0" width="100%">
             <thead>
-                <tr>
+                <tr style="font-size:10px">
                     <th style="width:100px;text-align:center"><span>选择</span></th>
                     <th><span>AUCTION</span></th>
                     <th><span>DATE</span></th>
@@ -190,7 +190,7 @@
             },
             "ajaxSource":"{% url 'unshipped_data' %}",
             "columns":[
-                {"data": null, "className": "ceTable", "fnCreatedCell":function(nTd, sData, oData, iRow, iCol){
+                {"data": null, "className": "ceTable", "sWidth":'5%', "fnCreatedCell":function(nTd, sData, oData, iRow, iCol){
                     element = $(nTd).empty();
                     element.append("<input type='checkbox' name='checkList' />");
                 }},

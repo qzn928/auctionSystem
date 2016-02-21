@@ -21,12 +21,10 @@ class CommodityForm(forms.ModelForm):
         )
 
     def clean(self):
-        print self.cleaned_data
         self.cleaned_data = super(CommodityForm, self).clean()
         lot = self.cleaned_data["lot"]
         auction = self.cleaned_data["auction"]
         auction_event = self.cleaned_data["auction_event"]#拍卖场次
-        print auction, auction_event
         try:
             auction_obj = AuctionField.objects.get(id=auction.id)
         except AuctionField.DoesNotExist:

@@ -195,7 +195,7 @@
                                         return false
                                     }
                                     $("#myModal").modal();
-                                    $("#invoiceSumit").on("click", function(){
+                                    $("#invoiceSumit").one("click", function(){
                                         var newRate = $("#newRate").val();
                                         var comRate = $("#comRate").val();
                                         var an_rmb_rate = $("#anRmbRate").val();

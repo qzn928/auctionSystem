@@ -7,63 +7,160 @@
 {% block content %}
     <div>
         <ul class="nav nav-tabs" id="myTab">
-            <li  class="active"><a href="#tab1">货运公司</a></li>
-            <li><a href="#tab2">地接公司</a></li>
-            <li><a href="#tab4">客户</a></li>
+            <li  class="active"><a href="#tab1" data-val="foreign">货运公司</a></li>
+            <li><a href="#tab2" data-val="delivery">地接公司</a></li>
+            <li><a href="#tab3">代理公司</a></li>
         </ul>
         <div class="tab-content">
-        <div id="tab1" class="tab-pane active">
-            <div class="portlet box green">
-                <div class="portlet-title">
-                    <div class="caption">
-                        <i class="fa fa-gift"></i> classify
+            <div id="tab1" class="tab-pane active">
+                <div class="portlet box green">
+                    <div class="portlet-title">
+                        <div class="caption">
+                            <i class="fa fa-gift"></i> classify
+                        </div>
+                        <div class="tools hidden-xs">
+                            <a href="javascript:;" class="collapse">
+                            </a>
+                        </div>
                     </div>
-                    <div class="tools hidden-xs">
-                        <a href="javascript:;" class="collapse">
-                        </a>
-                    </div>
-                </div>
-                <div class="portlet-body">
-                    <div class="panel-group accordion" id="accordion1">
-                        {% for f_ship in foreign_ship %}
-                        <div class="panel panel-default">
-                            <div class="panel-heading">
-                                <h4 class="panel-title">
-                                    <a class="accordion-toggle accordion-toggle-styled collapsed" data-toggle="collapse" data-parent="#accordion1" href="#collapse_{{f_ship.id}}">
-                                    货运公司:{{f_ship.name}}
-                                    <span style="margin-left:20px">账户欠款: {{f_ship.account.balance}}</span>
-                                    <button style="margin-left:30px;line-height:10px" class="btn btn-mini btn-primary" id="ship-{{f_ship.id}}"> pay </button>
-                                    </a>
-                                </h4>
-                            </div>
-                            <div id="collapse_{{f_ship.id}}" class="panel-collapse collapse">
-                                <div class="panel-body">
-                                    <table id="ship_{{f_ship.name}}" cellspacing="0" width="100%">
-                                        <thead>
-                                            <tr>
-                                                <th style="width:100px;text-align:center"><span>选择</span></th>
-                                                <th><span>拍卖会</span></th>
-                                                <th><span>运单号</span></th>
-                                                <th><span>到港口</span></th>
-                                               <!-- <th><span>品种</span></th>-->
-                                                <th><span>数量</span></th>
-                                                <th><span>计费重量</span></th>
-                                                <th><span>总金额</span></th>
-                                                <th><span>平均/KG</span></th>
-                                                <th><span>平均/张数</span></th>
-                                            </tr>
-                                        </thead>
-                                    </table>
+                    <div class="portlet-body">
+                        <div class="panel-group accordion" id="accordion1">
+                            {% for f_ship in foreign_ship %}
+                            <div class="panel panel-default">
+                                <div class="panel-heading">
+                                    <h4 class="panel-title">
+                                        <a class="accordion-toggle accordion-toggle-styled collapsed" data-toggle="collapse" data-parent="#accordion1" href="#collapse_{{f_ship.id}}">
+                                        货运公司:{{f_ship.name}}
+                                        <span style="margin-left:20px">账户欠款: {{f_ship.account.balance}}{{f_ship.currency}}</span>
+                                        <button style="margin-left:30px;line-height:10px" class="btn btn-mini btn-primary" id="ship-{{f_ship.id}}"> pay </button>
+                                        </a>
+                                    </h4>
+                                </div>
+                                <div id="collapse_{{f_ship.id}}" class="panel-collapse collapse">
+                                    <div class="panel-body">
+                                        <table id="ship_{{f_ship.id}}" cellspacing="0" width="100%">
+                                            <thead>
+                                                <tr>
+                                                    <th style="width:100px;text-align:center"><span>选择</span></th>
+                                                    <th><span>拍卖会</span></th>
+                                                    <th><span>运单号</span></th>
+                                                    <th><span>到港口</span></th>
+                                                   <!-- <th><span>品种</span></th>-->
+                                                    <th><span>数量</span></th>
+                                                    <th><span>计费重量</span></th>
+                                                    <th><span>总金额</span></th>
+                                                    <th><span>平均/KG</span></th>
+                                                    <th><span>平均/张数</span></th>
+                                                </tr>
+                                            </thead>
+                                        </table>
+                                    </div>
                                 </div>
                             </div>
+                            {% endfor %}
                         </div>
-                        {% endfor %}
+                    </div>
+                </div>
+            
+            </div>
+            <div id="tab2" class="tab-pane">
+                <div class="portlet box green">
+                    <div class="portlet-title">
+                        <div class="caption">
+                            <i class="fa fa-gift"></i> classify
+                        </div>
+                        <div class="tools hidden-xs">
+                            <a href="javascript:;" class="collapse">
+                            </a>
+                        </div>
+                    </div>
+                    <div class="portlet-body">
+                        <div class="panel-group accordion" id="accordion2">
+                            {% for del in deliverys %}
+                            <div class="panel panel-default">
+                                <div class="panel-heading">
+                                    <h4 class="panel-title">
+                                        <a class="accordion-toggle accordion-toggle-styled collapsed" data-toggle="collapse" data-parent="#accordion2" href="#del_collapse_{{del.id}}">
+                                        地接公司:{{del.name}}
+                                        <span style="margin-left:20px">账户欠款: {{del.account.balance}}</span>
+                                        </a>
+                                    </h4>
+                                </div>
+                                <div id="del_collapse_{{del.id}}" class="panel-collapse collapse">
+                                    <div class="panel-body">
+                                        <table id="delivery_{{del.id}}" cellspacing="0" width="100%">
+                                            <thead>
+                                                <tr>
+                                                    <th style="width:100px;text-align:center"><span>选择</span></th>
+                                                    <th><span>拍卖会</span></th>
+                                                    <th><span>运单号</span></th>
+                                                    <th><span>到港口</span></th>
+                                                   <!-- <th><span>品种</span></th>-->
+                                                    <th><span>数量</span></th>
+                                                    <th><span>计费重量</span></th>
+                                                    <th><span>总金额</span></th>
+                                                    <th><span>平均/KG</span></th>
+                                                    <th><span>平均/张数</span></th>
+                                                </tr>
+                                            </thead>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
                     </div>
                 </div>
             </div>
-        
-        </div>
-        <div id="tab2" class="tab-pane">wang bao zhong</div>
+            <div id="tab3" class="tab-pane">
+                <div class="portlet box green">
+                    <div class="portlet-title">
+                        <div class="caption">
+                            <i class="fa fa-gift"></i> classify
+                        </div>
+                        <div class="tools hidden-xs">
+                            <a href="javascript:;" class="collapse">
+                            </a>
+                        </div>
+                    </div>
+                    <div class="portlet-body">
+                        <div class="panel-group accordion" id="accordion3">
+                            {% for cle in clearances %}
+                            <div class="panel panel-default">
+                                <div class="panel-heading">
+                                    <h4 class="panel-title">
+                                        <a class="accordion-toggle accordion-toggle-styled collapsed" data-toggle="collapse" data-parent="#accordion3" href="#cle_collapse_{{cle.id}}">
+                                        代理公司:{{cle.name}}
+                                        <span style="margin-left:20px">账户欠款: {{cle.account.balance}}</span>
+                                        </a>
+                                    </h4>
+                                </div>
+                                <div id="cle_collapse_{{cle.id}}" class="panel-collapse collapse">
+                                    <div class="panel-body">
+                                        <table id="clearance_{{cle.id}}" cellspacing="0" width="100%">
+                                            <thead>
+                                                <tr>
+                                                    <th style="width:100px;text-align:center"><span>选择</span></th>
+                                                    <th><span>拍卖会</span></th>
+                                                    <th><span>运单号</span></th>
+                                                    <th><span>到港口</span></th>
+                                                   <!-- <th><span>品种</span></th>-->
+                                                    <th><span>数量</span></th>
+                                                    <th><span>计费重量</span></th>
+                                                    <th><span>总金额</span></th>
+                                                    <th><span>平均/KG</span></th>
+                                                    <th><span>平均/张数</span></th>
+                                                </tr>
+                                            </thead>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 {% endblock %}
@@ -129,13 +226,60 @@
             e.preventDefault();
             $(this).tab('show');
         })
-       //绑定toggle事件
-       $(".peelToggle").on("click", function(){
-            $(this).next().toggle()
-       })
+        get_classify_data("{% url 'ship_classify_data' %}?company=foreign", "foreign");
+        get_classify_data("{% url 'ship_classify_data' %}?company=delivery", "delivery");
+        get_classify_data("{% url 'ship_classify_data' %}?company=clearance", "clearance");
        var ship_tabs = {};
-       function shiptable(ship_name, list_data){
-             ship_tabs["ship_"+ship_name] = $("#ship_"+ship_name).DataTable({
+       var del_tabs = {};
+       var cle_tabs = {};
+       function shiptable(ship_id, list_data){
+             ship_tabs["ship_"+ship_id] = $("#ship_"+ship_id).DataTable({
+                "searching": false,
+                "info": false,
+                "paging": false,
+                "data": list_data,
+                "columns":[
+                    {"data": null, "className": "ceTable", "fnCreatedCell":function(nTd, sData, oData, iRow, iCol){
+                        element = $(nTd).empty();
+                        element.append("<input type='checkbox' name='checkList' />");
+                    }}, 
+                    {"data": "auction_name"},
+                    {"data": "master_nu"},
+                    {"data": "harbour"},
+                   // {"data": "goods_type"},
+                    {"data": "com_num"},
+                    {"data": "charge_weight"},
+                    {"data": "invoice_count"},
+                    {"data": "avg_weight"},
+                    {"data": "avg_num"},
+                ]
+            })
+       }
+       function cletable(cle_id, list_data){
+             cle_tabs["clearance_"+cle_id] = $("#clearance_"+cle_id).DataTable({
+                "searching": false,
+                "info": false,
+                "paging": false,
+                "data": list_data,
+                "columns":[
+                    {"data": null, "className": "ceTable", "fnCreatedCell":function(nTd, sData, oData, iRow, iCol){
+                        element = $(nTd).empty();
+                        element.append("<input type='checkbox' name='checkList' />");
+                    }}, 
+                    {"data": "auction_name"},
+                    {"data": "master_nu"},
+                    {"data": "harbour"},
+                   // {"data": "goods_type"},
+                    {"data": "com_num"},
+                    {"data": "charge_weight"},
+                    {"data": "invoice_count"},
+                    {"data": "avg_weight"},
+                    {"data": "avg_num"},
+                ]
+            })
+       }
+       function deltable(del_id, list_data){
+             del_tabs["del_"+del_id] = $("#delivery_"+del_id).DataTable({
                 "searching": false,
                 "info": false,
                 "paging": false,
@@ -164,12 +308,30 @@
                 $tr.toggleClass('selected');
             }) 
        }
-       $.getJSON("{% url 'ship_classify_data' %}", function(data){
-            $.each(data.data, function(i, n){
-                shiptable(i, n)
-                bind_select(i)
-            })
-       })
+       function get_classify_data(url, company){
+           if (company=="foreign"){
+               $.getJSON(url, function(data){
+                    $.each(data.data, function(i, n){
+                        shiptable(i, n)
+                        bind_select(i)
+                    })
+               })
+           }else if (company=="delivery"){
+               $.getJSON(url, function(data){
+                    $.each(data.data, function(i, n){
+                        deltable(i, n)
+                        bind_select(i)
+                    })
+               })
+           }else{
+               $.getJSON(url, function(data){
+                    $.each(data.data, function(i, n){
+                        cletable(i, n)
+                        bind_select(i)
+                    })
+               })
+           }
+       }
        $("#accordion1").delegate("button", "click", function(){
             $("#paymentOrder").modal()
             var this_id = $(this).attr("id")

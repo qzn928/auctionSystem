@@ -8,7 +8,7 @@
                     <div class="col-md-4">
                         <select id="id_types" name="types">
                             {% for v in auc_varietys %}
-                                {% if variety and variety == v.name %}
+                                {% if v.name == field.value %}
                                     <span><option selected>{{v.name}}</option></span>
                                 {% else %}
                                     <span><option>{{v.name}}</option></span>
@@ -25,7 +25,7 @@
                     <div class="col-md-4">
                         <select id="id_customer_id" name="customer_id">
                             {% for v in customers %}
-                                {% if customers and customer == v.name %}
+                                {% if v.name == field.value %}
                                     <span><option selected>{{v.name}}</option></span>
                                 {% else %}
                                     <span><option>{{v.name}}</option></span>

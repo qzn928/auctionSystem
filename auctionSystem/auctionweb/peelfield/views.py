@@ -58,7 +58,6 @@ def get_classify_data(request):
 #        back_data = back_data.get(str(args_pid))
     args_pid = request.GET.get("peel_id")
     all_com_obj = Commodity.objects.exclude(invoice__is_pre=1)
-    print all_com_obj
     back_data = {}
     for v in all_com_obj:
         try:
@@ -99,13 +98,25 @@ def add_peel_field(request, invoice_id):
         raise Http404
     post_data = request.POST
     lot_id_lis = json.loads(request.POST.get("lot_id_arr"))
+    sizes = LotSize.objects.all()
+    varietys = Variety.objects.all()
     try:
         peel_field_obj = PeelField.objects.get(pk=post_data.get("peel_field"))
-        peel_inform_obj = PeelInform.objects.get(pk=post_data.get("peel_inform"))
     except:
-        return ajax_error("object does not exist")
+        return ajax_error("peelfield object does not exist")
     com_list = Commodity.objects.filter(id__in=lot_id_lis)
     for com in com_list:
+        try:
+            variety_obj = varietys.get(name=com.types, auction=com.auction)
+            size_obj = sizes.get(size=com.size)
+            args = {
+                "sex": com.sex[0], "variety": variety_obj, 
+                "name": post_data.get("peel_inform"),
+                "peel_field": peel_field_obj, "size": size_obj
+            }
+            peel_inform_obj = PeelInform.objects.get(**args)
+        except Exception, e:
+            return ajax_error("%s"%str(e))
         com.peel_field = peel_field_obj
         com.peel_inform = peel_inform_obj
         com.peel_mo_num = com.peel_mo_num + 1

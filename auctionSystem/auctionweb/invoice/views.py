@@ -35,7 +35,6 @@ def vlist(request, template_name):
             form.save()
             return ajax_success()
         else:
-            print form.errors
             return ajax_error(form.errors)
     return render(request, template_name)
 
@@ -51,7 +50,10 @@ def create_final_invoice(request):
             error = True
         else:
             print invoice_obj.toDICT()
-            goods_nu, dollar_sum, cost_sum = invoice_formula(com_list, invoice_obj.toDICT(), False)
+            try:
+                goods_nu, dollar_sum, cost_sum = invoice_formula(com_list, invoice_obj.toDICT(), False)
+            except Exception, e:
+                return ajax_error("公式错误:%s"%str(e))
             invoice_obj.is_pre = 0
             invoice_obj.goods_nu = goods_nu
             invoice_obj.dollar_sum = dollar_sum
@@ -89,7 +91,7 @@ def get_invoice_table(request, invoice_id, template_name):
         return ajax_error("invoice_obj is not exist")
     html = render_to_string(
         template_name,
-        {"invoice_obj": invoice_obj},
+        {"invoice_obj": invoice_obj.toDICT()},
         context_instance=RequestContext(request))
     return ajax_success(html)
 def invoice_formula(com_list, post_data=None, is_pre=True):
@@ -112,8 +114,6 @@ def invoice_formula(com_list, post_data=None, is_pre=True):
         args["commission_rate"] = post_data.get("commission_rate")
         args["an_rmb_rate"] = post_data.get("an_rmb_rate")
         if com.sex == "male" and is_pre:
-            print args
-            print formula_obj.pre_invoice_dollar_male.format(**args)
             dollar_sum += eval(formula_obj.pre_invoice_dollar_male.format(**args))
             cost_sum += eval(formula_obj.pre_invoice_cost_male.format(**args))
         elif com.sex == "male" and not is_pre:
@@ -125,7 +125,7 @@ def invoice_formula(com_list, post_data=None, is_pre=True):
         else:
             dollar_sum += eval(formula_obj.final_invoice_dollar_female.format(**args))
             cost_sum += eval(formula_obj.final_invoice_cost_female.format(**args))
-    return  goods_sum, dollar_sum, cost_sum
+    return  goods_sum, round(dollar_sum, 2), round(cost_sum, 2)
 
             
 @csrf_exempt    
@@ -209,13 +209,17 @@ def vmodify(request, invoice_id):
     del_com_list = Commodity.objects.filter(lot__in=all_post_lot_nu)
     com_list = Commodity.objects.filter(lot__in=all_lot_nu)
     args = invoice_obj.toDICT()
-    goods_nu, dollar_sum, cost_sum = invoice_formula(com_list, args, True)
+    try:
+        goods_nu, dollar_sum, cost_sum = invoice_formula(com_list, args, True)
+    except Exception, e:
+        return ajax_error("公式错误:%s"%str(e))
     form_data = { 
         "goods_nu": goods_nu,
         "dollar_sum": dollar_sum,
         "cost_sum": cost_sum
     }
     [setattr(invoice_obj, key, val) for key, val in form_data.items() ]
+    invoice_obj.modify_times = invoice_obj.modify_times + 1
     invoice_obj.save()
     invoice_obj.commodity_set.remove(*del_com_list)
     del_com_list.update(is_invoice=0)
@@ -247,14 +251,15 @@ def add_ship_com(request):
     clearance_com = request.POST.get("clearance_company") # 清关公司
     delivery_com = request.POST.get("delivery_company") # 地接公司
     harbour = request.POST.get("harbour") # 港口
-    not_net_weight = request.POST.get("not_net_weight") # 港口
+    not_net_weight = request.POST.get("not_net_weight") # 毛重
     invoice_id_list =  json.loads(request.POST.get("invoice_id_list"))
     update_dict = {
         "clearance_company": Clearance.objects.get(name=clearance_com),
         "delivery_company": Delivery.objects.get(name=delivery_com),
         "harbour": Harbour.objects.get(name=harbour),
-        "not_net_weight": not_net_weight
     }
+    if not_net_weight:
+        update_dict['not_net_weight'] = not_net_weight
     Invoice.objects.filter(id__in=invoice_id_list).update(**update_dict)
     return ajax_success()
 
@@ -312,13 +317,29 @@ def change_rate(request, template_name):
                 "final_exchange_rate": i.final_exchange_rate,
                 "an_rmb_rate": i.an_rmb_rate
             }
-            i.goods_nu, i.dollar_sum, i.cost_sum = invoice_formula(com_list, post_data, False)
-            i.save()
-            print tt
+            try:
+                i.goods_nu, i.dollar_sum, i.cost_sum = invoice_formula(com_list, post_data, False)
+                i.save()
+            except Exception, e:
+                return ajax_error("公式错误:%s"%str(e))
         confirm_invoice_list = [i.toDICT() for i in all_invoices]
         return ajax_success(confirm_invoice_list)
-    return render(request, template_name, {})
+    auctions = AuctionField.objects.all()
+    return render(request, template_name, {"auctions": auctions})
 
 def commission(request, template_name):
     '''佣金模块'''
     return render(request, template_name, {})
+
+def get_commission_data(request):
+    '''获取佣金模块的数据
+    '''
+    all_final_invoice = Invoice.objects.filter(is_pre=0).order_by("invoice_nu")
+    comiss_obj = Commission.objects.all()[0]
+    comiss_data = []
+    for invoice in all_final_invoice:
+        flag, data = invoice.commission_fee(comiss_obj)
+        if not flag:
+            continue
+        comiss_data.append(data)
+    return ajax_success(comiss_data)
